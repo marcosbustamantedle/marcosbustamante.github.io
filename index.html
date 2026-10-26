@@ -184,6 +184,57 @@ section.sec { padding-block: 88px; }
 footer { background: var(--mb-negro); color: #9AA1B0; border-top: 1px solid #22242A; }
 footer .wrap { padding-block: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font: 400 13px/1.5 var(--mb-datos); }
 footer span:first-child { color: var(--mb-amarillo); }
+
+/* Barra fija de contacto: solo en móvil */
+.barra-movil { display: none; }
+
+/* Versión móvil: solo afecta a pantallas estrechas, el ordenador no cambia */
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  section.sec { padding-block: 56px; }
+  .sec-head { margin-bottom: 28px; gap: 12px; }
+  .sec-head p { font-size: 16px; }
+  .top .btn { display: none; }
+  .hero .wrap { padding-block: 40px 72px; gap: 20px; }
+  .hero p.lead { font-size: 17px; }
+  .hero .ctas, .contacto .ctas { flex-direction: column; }
+  .hero .ctas .btn, .contacto .ctas .btn { width: 100%; }
+  .datos-hero { flex-direction: column; gap: 6px; }
+  .franjas { width: 300px; height: 80px; right: -60px; bottom: 16px; }
+  .franjas i:nth-child(1) { height: 28px; }
+  .franjas i:nth-child(2) { top: 40px; height: 7px; }
+  .serv-cab, .serv-body { padding: 20px; }
+  .precio { padding: 16px 20px; }
+  .chips { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .chip { padding: 16px; gap: 6px; align-content: start; }
+  .chip h3 { font-size: 20px; }
+  .chip p { font-size: 14px; line-height: 1.45; }
+  .chip .tag { font-size: 11px; padding: 5px 7px; }
+  .pasos { gap: 28px; }
+  .modo { padding: 20px; }
+  .sobre { gap: 24px; }
+  .retrato { aspect-ratio: auto; height: 160px; }
+  .retrato .mb-xl { width: 96px; font-size: 48px; }
+  .retrato .franjas { width: 260px; right: -50px; bottom: 12px; }
+  .trayectoria li { padding: 14px 16px; }
+  .contacto .wrap { padding-block: 56px; }
+  .contacto .franjas { display: none; }
+  .dato-num { gap: 8px; }
+  footer .wrap { padding-bottom: 96px; flex-direction: column; }
+  .barra-movil {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+    background: var(--mb-negro); border-top: 1px solid #22242A;
+    padding-top: 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+  .barra-movil .btn { padding: 14px 8px; font-size: 15px; width: 100%; }
+}
+@media (max-width: 360px) {
+  .chips { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -371,6 +422,11 @@ footer span:first-child { color: var(--mb-amarillo); }
     </div>
   </section>
 </main>
+
+<nav class="barra-movil" aria-label="Contacto rápido">
+  <a class="btn btn-1 js-wa" href="#contacto">WhatsApp</a>
+  <a class="btn btn-2 js-cal" href="#contacto">Reservar</a>
+</nav>
 
 <footer>
   <div class="wrap">
