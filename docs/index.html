@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marcos Bustamante</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Valoraciones y entrenamiento personalizado con criterio de fisioterapia deportiva. Presencial en Santander y online.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: banda negra de impacto arriba, cuerpo claro tipo ficha, bandas de color por sección, cierre negro con CTA */
+:root {
+  --mb-negro: #0B0B0D; --mb-amarillo: #FFD400; --mb-azul: #1E4FD8;
+  --mb-azul-noche: #0D2A6B; --mb-niebla: #F4F6FA; --mb-acero: #5B6170;
+  --mb-linea: #DFE3EC; --mb-ok: #1F9D55;
+  --bg: var(--mb-niebla); --surface: #FFFFFF; --fg: var(--mb-negro);
+  --fg-2: var(--mb-acero); --line: var(--mb-linea); --link: var(--mb-azul);
+  --azul-suave: #E6ECFB;
+  --mb-display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --mb-texto: "Barlow", system-ui, sans-serif;
+  --mb-etiqueta: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --mb-datos: "IBM Plex Mono", ui-monospace, monospace;
+  --r: 6px; --rl: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B0B0D; --surface: #15161A; --fg: #EEF0F4; --fg-2: #9AA1B0;
+    --line: #2A2D35; --link: #8FB0FF; --azul-suave: #1A2547; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B0B0D; --surface: #15161A; --fg: #EEF0F4; --fg-2: #9AA1B0;
+  --line: #2A2D35; --link: #8FB0FF; --azul-suave: #1A2547; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 400 17px/1.6 var(--mb-texto);
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--mb-negro); }
+.wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: var(--link); }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--mb-azul); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--mb-display); font-weight: 400; text-transform: uppercase; line-height: 1.02; margin: 0; text-wrap: balance; letter-spacing: .005em; }
+h2 { font-size: clamp(32px, 6vw, 56px); }
+h3 { font-size: 28px; }
+p { margin: 0; }
+.eyebrow { font: 500 14px/1 var(--mb-datos); letter-spacing: .04em; text-transform: uppercase; color: var(--link); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  font: 700 18px/1 var(--mb-etiqueta); letter-spacing: .1em; text-transform: uppercase;
+  padding: 16px 24px; border-radius: var(--r); text-decoration: none; border: 2px solid transparent;
+  transition: transform .15s ease;
+}
+.btn:hover { transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .btn:hover { transform: none; } }
+.btn-1 { background: var(--mb-amarillo); color: var(--mb-negro); }
+.btn-2 { background: transparent; color: #fff; border-color: #fff; }
+.btn-3 { background: transparent; color: var(--link); border-color: var(--link); }
+.btn svg { width: 20px; height: 20px; flex: none; }
+
+/* Barra superior */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--mb-negro); color: #fff; border-bottom: 1px solid #22242A; }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 12px; }
+.logo { display: flex; align-items: center; gap: 12px; color: #fff; text-decoration: none; }
+.mb { width: 40px; height: 40px; border-radius: 8px; background: var(--mb-amarillo); color: var(--mb-negro); display: grid; place-items: center; font: 22px/1 var(--mb-display); flex: none; }
+.logo b { font: 400 20px/1 var(--mb-display); letter-spacing: .02em; display: block; }
+.logo small { font: 600 12px/1 var(--mb-etiqueta); letter-spacing: .12em; text-transform: uppercase; color: #9AA1B0; display: block; margin-top: 4px; }
+.top nav { display: flex; gap: 24px; }
+.top nav a { color: #fff; text-decoration: none; font: 600 15px/1 var(--mb-etiqueta); letter-spacing: .1em; text-transform: uppercase; }
+.top nav a:hover { color: var(--mb-amarillo); }
+.top .btn { padding: 10px 16px; font-size: 15px; }
+@media (max-width: 820px) { .top nav { display: none; } }
+@media (max-width: 420px) { .logo small { display: none; } }
+
+/* Hero */
+.hero { background: var(--mb-negro); color: #fff; position: relative; overflow: hidden; }
+.hero .wrap { position: relative; z-index: 1; padding-block: 72px 112px; display: grid; gap: 24px; }
+.hero .eyebrow { color: var(--mb-amarillo); }
+.hero h1 { font-size: clamp(48px, 10vw, 112px); max-width: 12ch; }
+.hero h1 span { color: var(--mb-amarillo); }
+.hero p.lead { font-size: 20px; color: #C9CDD6; max-width: 34em; }
+.hero .ctas { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; }
+.franjas { position: absolute; right: -80px; bottom: 40px; width: 520px; max-width: 80%; height: 120px; transform: rotate(-24deg); transform-origin: right bottom; pointer-events: none; }
+.franjas i { position: absolute; left: 0; right: 0; display: block; }
+.franjas i:nth-child(1) { top: 0; height: 44px; background: var(--mb-amarillo); }
+.franjas i:nth-child(2) { top: 60px; height: 10px; background: var(--mb-azul); }
+.datos-hero { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-top: 16px; font: 400 14px/1.4 var(--mb-datos); color: #9AA1B0; }
+.datos-hero strong { color: #fff; font-weight: 500; }
+
+/* Secciones */
+section.sec { padding-block: 88px; }
+.sec-head { display: grid; gap: 16px; margin-bottom: 40px; max-width: 46em; }
+.sec-head p { color: var(--fg-2); font-size: 18px; }
+
+/* Servicios */
+.servicios { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.serv { background: var(--surface); border: 1px solid var(--line); border-radius: var(--rl); overflow: hidden; display: flex; flex-direction: column; }
+.serv-cab { background: var(--mb-negro); color: #fff; padding: 24px; display: grid; gap: 12px; }
+.serv-cab .eyebrow { color: var(--mb-amarillo); }
+.serv-body { padding: 24px; display: grid; gap: 16px; flex: 1; align-content: start; }
+.serv-body p { color: var(--fg-2); }
+.serv ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; }
+.serv li { display: grid; grid-template-columns: 32px 1fr; gap: 8px; padding-block: 12px; border-top: 1px solid var(--line); }
+.serv li span { font: 500 14px/1.6 var(--mb-datos); color: var(--link); font-variant-numeric: tabular-nums; }
+.precio { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 16px 24px; border-top: 1px solid var(--line); }
+.precio div { font: 500 14px/1.3 var(--mb-datos); color: var(--fg-2); text-transform: uppercase; letter-spacing: .04em; }
+.precio div b { display: block; font: 400 24px/1.1 var(--mb-display); color: var(--fg); letter-spacing: .02em; }
+.precio .btn { padding: 12px 16px; font-size: 15px; }
+
+/* Objetivos */
+.objetivos { background: var(--surface); border-block: 1px solid var(--line); }
+.chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.chip { border: 1px solid var(--line); border-radius: var(--rl); padding: 24px; display: grid; gap: 8px; background: var(--bg); }
+.chip .tag { justify-self: start; font: 500 13px/1 var(--mb-datos); padding: 6px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.t1 { background: var(--azul-suave); color: var(--link); }
+.t2 { background: var(--mb-azul); color: #fff; }
+.t3 { background: var(--mb-negro); color: var(--mb-amarillo); }
+.chip h3 { font-size: 24px; }
+.chip p { color: var(--fg-2); font-size: 16px; }
+
+/* Proceso (fondo azul noche con cuadrícula) */
+.proceso { background-color: var(--mb-azul-noche); color: #fff;
+  background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 32px 32px; }
+.proceso .eyebrow { color: var(--mb-amarillo); }
+.proceso .sec-head p { color: #C3CDE6; }
+.pasos { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; counter-reset: paso; }
+.pasos li { display: grid; gap: 12px; align-content: start; position: relative; padding-top: 28px; border-top: 2px solid rgba(255,255,255,.25); }
+.pasos li::before { content: ""; position: absolute; top: -8px; left: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--mb-amarillo); }
+.pasos .n { font: 500 14px/1 var(--mb-datos); color: var(--mb-amarillo); }
+.pasos h3 { font-size: 28px; }
+.pasos p { color: #C3CDE6; font-size: 16px; }
+
+/* Modalidades */
+.modos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+.modo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--rl); padding: 32px; display: grid; gap: 12px; align-content: start; }
+.modo .tag { justify-self: start; }
+.modo p { color: var(--fg-2); }
+.modo dl { margin: 8px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 16px; }
+.modo dt { font: 500 13px/1.6 var(--mb-datos); color: var(--fg-2); text-transform: uppercase; }
+.modo dd { margin: 0; }
+
+/* Sobre mí */
+.sobre { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; align-items: start; }
+@media (max-width: 820px) { .sobre { grid-template-columns: 1fr; } }
+.retrato { aspect-ratio: 4 / 5; max-width: 100%; border-radius: var(--rl); background: var(--mb-negro); position: relative; overflow: hidden; display: grid; place-items: center; }
+.retrato .mb-xl { width: 40%; aspect-ratio: 1; border-radius: 18%; background: var(--mb-amarillo); color: var(--mb-negro); display: grid; place-items: center; font: 400 clamp(48px, 9vw, 96px)/1 var(--mb-display); position: relative; z-index: 1; }
+.retrato .franjas { right: -60px; bottom: 24px; width: 380px; height: 90px; }
+.retrato .franjas i:nth-child(1) { height: 30px; }
+.retrato .franjas i:nth-child(2) { top: 42px; height: 8px; }
+.sobre-txt { display: grid; gap: 20px; min-width: 0; }
+.sobre-txt p { max-width: 38em; }
+.trayectoria { list-style: none; padding: 0; margin: 8px 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--rl); overflow: hidden; }
+.trayectoria li { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 16px 20px; border-top: 1px solid var(--line); align-items: baseline; }
+.trayectoria li:first-child { border-top: 0; }
+.trayectoria b { font-weight: 600; }
+.trayectoria small { grid-column: 1 / -1; color: var(--fg-2); font-size: 15px; }
+.trayectoria .tag { font: 500 12px/1 var(--mb-datos); padding: 6px 8px; border-radius: 4px; text-transform: uppercase; white-space: nowrap; }
+.nota { border-left: 4px solid var(--mb-amarillo); background: var(--surface); padding: 16px 20px; border-radius: 0 var(--rl) var(--rl) 0; color: var(--fg-2); font-size: 16px; }
+
+/* Contacto */
+.contacto { background: var(--mb-negro); color: #fff; position: relative; overflow: hidden; }
+.contacto .wrap { position: relative; z-index: 1; padding-block: 88px; display: grid; gap: 24px; }
+.contacto .eyebrow { color: var(--mb-amarillo); }
+.contacto h2 { font-size: clamp(40px, 8vw, 80px); max-width: 14ch; }
+.contacto h2 span { color: var(--mb-amarillo); }
+.contacto p { color: #C9CDD6; max-width: 34em; font-size: 18px; }
+.contacto .ctas { display: flex; flex-wrap: wrap; gap: 16px; }
+.dato-num { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font: 500 16px/1.4 var(--mb-datos); color: #fff; }
+.dato-num code { font: inherit; background: #1C1D22; padding: 8px 12px; border-radius: var(--r); user-select: all; }
+.copiar { font: 700 14px/1 var(--mb-etiqueta); letter-spacing: .1em; text-transform: uppercase; background: transparent; color: var(--mb-amarillo); border: 1px solid #3A3D46; border-radius: var(--r); padding: 9px 12px; cursor: pointer; }
+.contacto .franjas { right: -120px; top: 40px; bottom: auto; }
+footer { background: var(--mb-negro); color: #9AA1B0; border-top: 1px solid #22242A; }
+footer .wrap { padding-block: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font: 400 13px/1.5 var(--mb-datos); }
+footer span:first-child { color: var(--mb-amarillo); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#inicio" aria-label="Marcos Bustamante, inicio">
+      <span class="mb">MB</span>
+      <span><b>MARCOS BUSTAMANTE</b><small>Fisio deportivo · Entrenamiento</small></span>
+    </a>
+    <nav aria-label="Secciones">
+      <a href="#servicios">Servicios</a>
+      <a href="#como-trabajo">Cómo trabajo</a>
+      <a href="#sobre-mi">Sobre mí</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <a class="btn btn-1 js-wa" href="#contacto">Escríbeme</a>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <div class="franjas" aria-hidden="true"><i></i><i></i></div>
+    <div class="wrap">
+      <p class="eyebrow">// Fisioterapia deportiva + entrenamiento personalizado</p>
+      <h1>Entrena sano. <span>Rinde más.</span></h1>
+      <p class="lead">Valoro cómo te mueves y te preparo una rutina hecha para ti: para dejar atrás una lesión, prevenir la siguiente o ir a por tu objetivo. Con criterio de fisio y la exigencia de un entrenador.</p>
+      <div class="ctas">
+        <a class="btn btn-1 js-wa" href="#contacto">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.4-.3Z"/></svg>
+          Escríbeme por WhatsApp
+        </a>
+        <a class="btn btn-2 js-cal" href="#contacto">Reserva tu valoración</a>
+      </div>
+      <div class="datos-hero">
+        <span><strong>Presencial</strong> · Santander</span>
+        <span><strong>Online</strong> · desde cualquier sitio</span>
+        <span><strong>Precio</strong> · consúltame</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="servicios">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">// Servicios</p>
+        <h2>Primero te valoro. Luego te entreno.</h2>
+        <p>Dos servicios que funcionan juntos o por separado. Cada caso es distinto, así que el precio lo hablamos según lo que necesites.</p>
+      </div>
+      <div class="servicios">
+        <article class="serv">
+          <div class="serv-cab">
+            <p class="eyebrow">Sesión 01 · 30 min</p>
+            <h3>Valoración</h3>
+          </div>
+          <div class="serv-body">
+            <p>Antes de mandarte un solo ejercicio, entiendo de dónde partes.</p>
+            <ul>
+              <li><span>01</span>Historia de lesiones, molestias y deporte que practicas.</li>
+              <li><span>02</span>Pruebas de movilidad, fuerza y control del movimiento.</li>
+              <li><span>03</span>Tus objetivos y el tiempo real que tienes para entrenar.</li>
+              <li><span>04</span>Conclusiones claras y el punto de partida de tu plan.</li>
+            </ul>
+          </div>
+          <div class="precio">
+            <div>Precio<b>Consúltame</b></div>
+            <a class="btn btn-3 js-wa" href="#contacto">Preguntar</a>
+          </div>
+        </article>
+        <article class="serv">
+          <div class="serv-cab">
+            <p class="eyebrow">Plan por fases · semanas</p>
+            <h3>Rutina personalizada</h3>
+          </div>
+          <div class="serv-body">
+            <p>Un plan de ejercicio terapéutico y entrenamiento funcional diseñado solo para ti.</p>
+            <ul>
+              <li><span>01</span>Ejercicios con series, repeticiones, tempo y descansos.</li>
+              <li><span>02</span>Vídeo de cada ejercicio para que lo hagas bien desde el primer día.</li>
+              <li><span>03</span>Progresión por fases: control, carga y rendimiento.</li>
+              <li><span>04</span>Seguimiento y ajustes según cómo responde tu cuerpo.</li>
+            </ul>
+          </div>
+          <div class="precio">
+            <div>Precio<b>Consúltame</b></div>
+            <a class="btn btn-3 js-wa" href="#contacto">Preguntar</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec objetivos">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">// ¿Para qué?</p>
+        <h2>Tu objetivo marca el plan</h2>
+        <p>Corres, vas al gimnasio, juegas al pádel o al fútbol, o simplemente quieres estar mejor. Da igual el punto de partida.</p>
+      </div>
+      <div class="chips">
+        <div class="chip"><span class="tag t1">Readaptación</span><h3>Dejar atrás una lesión</h3><p>Volver a moverte sin miedo cuando algo te lleva tiempo molestando.</p></div>
+        <div class="chip"><span class="tag t1">Prevención</span><h3>Que no vuelva a pasar</h3><p>Reforzar los puntos débiles antes de que se conviertan en lesión.</p></div>
+        <div class="chip"><span class="tag t2">Salud</span><h3>Moverte mejor</h3><p>Más movilidad, menos dolor y energía para tu día a día.</p></div>
+        <div class="chip"><span class="tag t3">Rendimiento</span><h3>Fuerza o perder peso</h3><p>Objetivos concretos, con cifras y una progresión que puedas sostener.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec proceso" id="como-trabajo">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">// Cómo trabajo</p>
+        <h2>De la valoración a tu mejor versión</h2>
+        <p>Tres pasos. Sin rutinas genéricas copiadas de internet.</p>
+      </div>
+      <ol class="pasos">
+        <li><span class="n">PASO 01</span><h3>Me escribes</h3><p>Me cuentas por WhatsApp qué te pasa o qué quieres conseguir y quedamos para la valoración.</p></li>
+        <li><span class="n">PASO 02</span><h3>Te valoro</h3><p>Presencial o por videollamada. Vemos cómo te mueves y fijamos objetivos medibles.</p></li>
+        <li><span class="n">PASO 03</span><h3>Entrenas con plan</h3><p>Recibes tu rutina con vídeos y la vamos ajustando. Cuando estés listo, subimos de nivel.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">// Modalidades</p>
+        <h2>Donde mejor te venga</h2>
+      </div>
+      <div class="modos">
+        <div class="modo">
+          <span class="tag t3" style="font:500 13px/1 var(--mb-datos);padding:6px 10px;border-radius:4px;text-transform:uppercase">Presencial</span>
+          <h3>En Santander</h3>
+          <p>La valoración en persona permite explorar con más detalle. Ideal si estás lesionado o empiezas de cero.</p>
+          <dl><dt>Zona</dt><dd>Santander y alrededores</dd><dt>Precio</dt><dd>Consúltame</dd></dl>
+        </div>
+        <div class="modo">
+          <span class="tag t2" style="font:500 13px/1 var(--mb-datos);padding:6px 10px;border-radius:4px;text-transform:uppercase">Online</span>
+          <h3>Desde cualquier sitio</h3>
+          <p>Valoración por videollamada, rutina con vídeos de cada ejercicio y seguimiento por WhatsApp.</p>
+          <dl><dt>Zona</dt><dd>Toda España</dd><dt>Precio</dt><dd>Consúltame</dd></dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="sobre-mi" style="padding-top:0">
+    <div class="wrap sobre">
+      <div class="retrato" aria-label="Espacio para tu foto">
+        <span class="mb-xl">MB</span>
+        <div class="franjas" aria-hidden="true"><i></i><i></i></div>
+      </div>
+      <div class="sobre-txt">
+        <p class="eyebrow">// Sobre mí</p>
+        <h2>Soy Marcos Bustamante</h2>
+        <p>Estudio 4.º de Fisioterapia con la mención en Deporte. Me apasiona el punto donde se juntan la fisio y el entrenamiento: entender por qué duele algo y construir, ejercicio a ejercicio, un cuerpo que rinda y aguante.</p>
+        <p>Mi forma de trabajar es sencilla: valorar bien, explicar claro y progresar con cabeza. Sin promesas milagro, con cifras y con un plan que puedas seguir.</p>
+        <ul class="trayectoria" aria-label="Formación y experiencia">
+          <li><b>Grado en Fisioterapia · mención Deporte</b><span class="tag t1">4.º curso</span><small>Formación en ejercicio terapéutico y readaptación deportiva.</small></li>
+          <li><b>Palestra del Sardinero</b><span class="tag t2">5 meses</span><small>Entrenamiento y readaptación en centro deportivo.</small></li>
+          <li><b>Hospital Universitario Marqués de Valdecilla</b><span class="tag t1">Prácticas</span><small>Fisioterapia en entorno hospitalario.</small></li>
+          <li><b>Hospital Santa Clotilde</b><span class="tag t1">Prácticas</span><small>Fisioterapia en entorno hospitalario.</small></li>
+          <li><b>Centros de salud</b><span class="tag t1">Prácticas</span><small>Atención primaria.</small></li>
+          <li><b>Árbitro de baloncesto</b><span class="tag t3">3 años</span><small>Vivo el deporte desde dentro de la pista: sé lo que exige la competición al cuerpo.</small></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="contacto" id="contacto">
+    <div class="franjas" aria-hidden="true"><i></i><i></i></div>
+    <div class="wrap">
+      <p class="eyebrow">// Contacto</p>
+      <h2>¿Empezamos? <span>Escríbeme.</span></h2>
+      <p>Cuéntame en dos líneas qué te pasa o qué quieres conseguir. Te respondo y te digo cómo te puedo ayudar y cuánto cuesta.</p>
+      <div class="ctas">
+        <a class="btn btn-1 js-wa" href="#contacto" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn-2 js-cal" href="#contacto" target="_blank" rel="noopener">Reserva tu valoración</a>
+      </div>
+      <div class="dato-num">
+        <span>WhatsApp:</span>
+        <code id="num">+34 622 860 667</code>
+        <button class="copiar" id="copiar" type="button">Copiar número</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>MARCOS BUSTAMANTE · Entrena sano. Rinde más.</span>
+    <span>Presencial en Santander · Online</span>
+  </div>
+</footer>
+
+<script>
+// Datos de contacto: cambia aquí el número y el enlace de reserva.
+const WHATSAPP = "34622860667";
+const CALENDLY = "https://calendly.com/maarcosbustamantedle/30min";
+const MENSAJE = "Hola Marcos, me interesa una valoración. Te cuento:";
+
+const waUrl = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(MENSAJE);
+document.querySelectorAll(".js-wa").forEach(a => { a.href = waUrl; a.target = "_blank"; a.rel = "noopener"; });
+document.querySelectorAll(".js-cal").forEach(a => {
+  if (CALENDLY) { a.href = CALENDLY; a.target = "_blank"; a.rel = "noopener"; }
+  else { a.href = waUrl; a.target = "_blank"; a.rel = "noopener"; }
+});
+const num = document.getElementById("num");
+num.textContent = "+" + WHATSAPP.slice(0, 2) + " " + WHATSAPP.slice(2).replace(/(\d{3})(?=\d)/g, "$1 ");
+document.getElementById("copiar").addEventListener("click", e => {
+  const b = e.currentTarget;
+  const ok = () => { b.textContent = "Copiado"; setTimeout(() => b.textContent = "Copiar número", 1800); };
+  try {
+    navigator.clipboard.writeText(num.textContent).then(ok, () => selectNum());
+  } catch { selectNum(); }
+  function selectNum() { const r = document.createRange(); r.selectNodeContents(num); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+});
+</script>
+</body>
+</html>
