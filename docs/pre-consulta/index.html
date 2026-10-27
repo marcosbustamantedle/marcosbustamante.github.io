@@ -4,8 +4,9 @@
   Un solo archivo con tres partes:
     1. <head>  -> datos de la página, letras de Google Fonts y estilos (CSS).
     2. <form>  -> las 13 preguntas, repartidas en 5 bloques.
-    3. <script> al final -> una línea que pone el nombre del cliente en el asunto del email.
-  Netlify Forms lee el formulario gracias a data-netlify="true" y guarda cada respuesta.
+    3. <script> al final -> prepara el asunto del email y junta las casillas marcadas.
+  El envío lo hace FormSubmit (formsubmit.co): recibe las respuestas y te las manda por email.
+  No necesita servidor ni cuenta. La primera vez te llega un email para activarlo.
 -->
 <html lang="es">
 <head>
@@ -184,17 +185,20 @@
 
 <main>
   <!--
-    El formulario. Lo importante para Netlify:
-    - name="pre-consulta"       -> nombre con el que aparecerá en tu panel de Netlify.
-    - data-netlify="true"       -> "Netlify, recoge este formulario".
-    - netlify-honeypot="bot-field" -> filtro anti-spam (campo oculto más abajo).
+    El formulario. action="..." es la dirección a la que se envían las respuestas:
+    FormSubmit las recibe y te las reenvía a tu Gmail.
   -->
-  <form name="pre-consulta" method="POST" data-netlify="true" netlify-honeypot="bot-field">
-    <!-- Campos ocultos que necesita Netlify -->
-    <input type="hidden" name="form-name" value="pre-consulta">
+  <form id="ficha" action="https://formsubmit.co/maarcosbustamantedle@gmail.com" method="POST">
+    <!-- Ajustes de FormSubmit (campos ocultos que empiezan por _) -->
     <!-- Asunto del email. El script del final añade el nombre del cliente. -->
-    <input type="hidden" name="subject" id="asunto" data-remove-prefix value="[Pre-consulta]">
-    <p class="oculto"><label>No rellenes esto: <input name="bot-field"></label></p>
+    <input type="hidden" name="_subject" id="asunto" value="[Pre-consulta]">
+    <!-- Email en forma de tabla, más fácil de leer -->
+    <input type="hidden" name="_template" value="table">
+    <!-- Sin captcha: el filtro anti-spam es el campo trampa de abajo -->
+    <input type="hidden" name="_captcha" value="false">
+    <!-- Página que ve el cliente después de enviar -->
+    <input type="hidden" name="_next" value="https://marcosbustamantedle.github.io/marcosbustamante.github.io/pre-consulta/gracias.html">
+    <p class="oculto"><label>No rellenes esto: <input name="_honey" tabindex="-1" autocomplete="off"></label></p>
 
     <!-- ========== BLOQUE 1 · DATOS BÁSICOS ========== -->
     <fieldset>
@@ -244,21 +248,22 @@
       <div class="pregunta">
         <span class="titulo"><span class="num">04</span>¿Dónde lo notas?</span>
         <span class="ayuda">Puedes marcar varias zonas.</span>
-        <!-- name="zonas[]": los corchetes permiten marcar varias a la vez -->
+        <!-- Las casillas no se envían una a una: el script del final las junta en "zonas" -->
+        <input type="hidden" name="zonas" id="zonas">
         <div class="opciones">
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Cuello"><span>Cuello</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Hombro"><span>Hombro</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Codo"><span>Codo</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Muñeca/mano"><span>Muñeca / mano</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Espalda alta"><span>Espalda alta</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Zona lumbar"><span>Zona lumbar</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Cadera/ingle"><span>Cadera / ingle</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Muslo"><span>Muslo</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Rodilla"><span>Rodilla</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Gemelo/pierna"><span>Gemelo / pierna</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Tobillo"><span>Tobillo</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Pie"><span>Pie</span></label>
-          <label class="opcion"><input type="checkbox" name="zonas[]" value="Otra"><span>Otra</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Cuello"><span>Cuello</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Hombro"><span>Hombro</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Codo"><span>Codo</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Muñeca/mano"><span>Muñeca / mano</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Espalda alta"><span>Espalda alta</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Zona lumbar"><span>Zona lumbar</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Cadera/ingle"><span>Cadera / ingle</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Muslo"><span>Muslo</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Rodilla"><span>Rodilla</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Gemelo/pierna"><span>Gemelo / pierna</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Tobillo"><span>Tobillo</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Pie"><span>Pie</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="zonas" value="Otra"><span>Otra</span></label>
         </div>
         <span class="ayuda" style="margin-top:12px">¿De qué lado?</span>
         <div class="opciones">
@@ -403,13 +408,14 @@
       <div class="pregunta">
         <span class="titulo"><span class="num">12</span>¿Qué esperas conseguir con las sesiones?</span>
         <span class="ayuda">Puedes marcar varias.</span>
+        <input type="hidden" name="expectativas" id="expectativas">
         <div class="opciones">
-          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Que me deje de doler"><span>Que me deje de doler</span></label>
-          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Volver a entrenar o competir"><span>Volver a entrenar o competir</span></label>
-          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Mejorar el rendimiento"><span>Mejorar el rendimiento</span></label>
-          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Ganar movilidad"><span>Ganar movilidad</span></label>
-          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Prevenir lesiones"><span>Prevenir lesiones</span></label>
-          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Moverme mejor en el día a día"><span>Moverme mejor en el día a día</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="expectativas" value="Que me deje de doler"><span>Que me deje de doler</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="expectativas" value="Volver a entrenar o competir"><span>Volver a entrenar o competir</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="expectativas" value="Mejorar el rendimiento"><span>Mejorar el rendimiento</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="expectativas" value="Ganar movilidad"><span>Ganar movilidad</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="expectativas" value="Prevenir lesiones"><span>Prevenir lesiones</span></label>
+          <label class="opcion"><input type="checkbox" data-grupo="expectativas" value="Moverme mejor en el día a día"><span>Moverme mejor en el día a día</span></label>
         </div>
       </div>
 
@@ -426,7 +432,7 @@
       <div class="privacidad">
         <p><strong>Responsable:</strong> Marcos Bustamante De La Escalera (NIF 72207421W). Contacto: <a href="mailto:maarcosbustamantedle@gmail.com">maarcosbustamantedle@gmail.com</a>.</p>
         <p><strong>Para qué:</strong> preparar tu primera sesión de fisioterapia y entrenamiento. Incluye datos de salud, que solo trato con tu consentimiento expreso.</p>
-        <p><strong>Quién más los ve:</strong> nadie más. Se guardan en Netlify (servicio del formulario) y me llegan por email (Gmail).</p>
+        <p><strong>Quién más los ve:</strong> nadie más. Pasan por FormSubmit (el servicio que envía el formulario) y me llegan por email (Gmail).</p>
         <p><strong>Tus derechos:</strong> puedes pedirme ver, corregir o borrar tus datos, o retirar tu consentimiento, escribiendo al email de arriba. También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).</p>
       </div>
       <label class="consentimiento">
@@ -442,11 +448,18 @@
 <footer>Entrena sano. Rinde más.</footer>
 
 <script>
-  // Justo antes de enviar, pone el nombre del cliente en el asunto del email:
-  // "[Pre-consulta] Ana López"
-  document.querySelector('form').addEventListener('submit', function () {
+  // Justo antes de enviar:
+  document.getElementById('ficha').addEventListener('submit', function () {
+    // 1. Pone el nombre del cliente en el asunto: "[Pre-consulta] Ana López"
     var nombre = document.getElementById('nombre').value.trim();
     document.getElementById('asunto').value = '[Pre-consulta] ' + nombre;
+
+    // 2. Junta las casillas marcadas en una sola línea: "Rodilla, Tobillo"
+    ['zonas', 'expectativas'].forEach(function (grupo) {
+      var marcadas = document.querySelectorAll('[data-grupo="' + grupo + '"]:checked');
+      var valores = Array.prototype.map.call(marcadas, function (c) { return c.value; });
+      document.getElementById(grupo).value = valores.join(', ') || '—';
+    });
   });
 </script>
 </body>
