@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<!--
+  FICHA DE PRE-CONSULTA · Marcos Bustamante
+  Un solo archivo con tres partes:
+    1. <head>  -> datos de la página, letras de Google Fonts y estilos (CSS).
+    2. <form>  -> las 13 preguntas, repartidas en 5 bloques.
+    3. <script> al final -> una línea que pone el nombre del cliente en el asunto del email.
+  Netlify Forms lee el formulario gracias a data-netlify="true" y guarda cada respuesta.
+-->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- Hace que la página se adapte al ancho del móvil -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Evita que Google indexe esta página: es solo para tus clientes -->
+  <meta name="robots" content="noindex, nofollow">
+  <title>Pre-consulta · Marcos Bustamante</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== Colores y letras de tu marca (se definen una vez y se reutilizan) ===== */
+    :root {
+      --mb-negro: #0B0B0D; --mb-amarillo: #FFD400; --mb-azul: #1E4FD8;
+      --mb-niebla: #F4F6FA; --mb-acero: #5B6170; --mb-linea: #DFE3EC;
+      --mb-alerta: #D64545; --mb-blanco: #FFFFFF;
+      --mb-display: "Anton", Impact, sans-serif;
+      --mb-texto: "Barlow", system-ui, sans-serif;
+      --mb-etiqueta: "Barlow Condensed", "Arial Narrow", sans-serif;
+      --mb-datos: "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    /* ===== Base: fondo claro y texto legible ===== */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--mb-niebla);
+      color: var(--mb-negro);
+      font-family: var(--mb-texto);
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    /* ===== Cabecera negra con tu nombre y las franjas diagonales ===== */
+    header {
+      background: var(--mb-negro);
+      color: var(--mb-blanco);
+      padding: 32px 16px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::after { /* franjas: amarilla gruesa + azul fina */
+      content: "";
+      position: absolute; right: -40px; bottom: 18px;
+      width: 220px; height: 14px;
+      background: var(--mb-amarillo);
+      box-shadow: 0 10px 0 -4px var(--mb-azul);
+      transform: rotate(-24deg);
+    }
+    .marca { font-family: var(--mb-display); font-size: 24px; letter-spacing: .02em; }
+    .marca-sub {
+      font-family: var(--mb-etiqueta); font-weight: 600; text-transform: uppercase;
+      letter-spacing: .1em; font-size: 14px; color: var(--mb-amarillo);
+    }
+    h1 {
+      font-family: var(--mb-display); font-weight: 400; text-transform: uppercase;
+      font-size: 40px; line-height: 1.05; margin: 24px 0 8px;
+    }
+    header p { margin: 0; color: #C9CDD6; max-width: 34em; }
+
+    /* ===== Contenedor central (en ordenador no se estira demasiado) ===== */
+    main { max-width: 640px; margin: 0 auto; padding: 24px 16px 48px; }
+
+    /* ===== Cada bloque de preguntas es una tarjeta blanca ===== */
+    fieldset {
+      border: 1px solid var(--mb-linea);
+      border-radius: 12px;
+      background: var(--mb-blanco);
+      padding: 24px 16px;
+      margin: 0 0 24px;
+    }
+    legend {
+      font-family: var(--mb-etiqueta); font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; font-size: 14px;
+      background: var(--mb-negro); color: var(--mb-amarillo);
+      padding: 4px 12px; border-radius: 6px;
+    }
+    .num { font-family: var(--mb-datos); color: var(--mb-azul); font-weight: 500; margin-right: 6px; }
+
+    /* ===== Una pregunta ===== */
+    .pregunta { margin-bottom: 24px; }
+    .pregunta:last-child { margin-bottom: 0; }
+    .titulo { display: block; font-weight: 700; margin-bottom: 8px; }
+    .ayuda { display: block; font-size: 14px; color: var(--mb-acero); margin: -4px 0 8px; }
+    .obligatorio { color: var(--mb-alerta); }
+
+    /* ===== Campos de texto ===== */
+    input[type="text"], input[type="tel"], input[type="number"], textarea, select {
+      width: 100%;
+      font: inherit;
+      padding: 12px;
+      border: 1px solid var(--mb-linea);
+      border-radius: 6px;
+      background: var(--mb-blanco);
+      color: var(--mb-negro);
+    }
+    textarea { min-height: 96px; resize: vertical; }
+    .fila { display: grid; gap: 8px; }
+    .fila label { font-size: 14px; color: var(--mb-acero); }
+    .dos-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* Foco visible en azul (para quien navega con teclado) */
+    input:focus-visible, textarea:focus-visible, select:focus-visible,
+    button:focus-visible { outline: 3px solid var(--mb-azul); outline-offset: 2px; }
+
+    /* ===== Opciones (casillas y círculos) en forma de "pastilla" fácil de pulsar ===== */
+    .opciones { display: flex; flex-wrap: wrap; gap: 8px; }
+    .opcion { position: relative; }
+    .opcion input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .opcion span {
+      display: inline-block;
+      padding: 10px 14px;
+      border: 1px solid var(--mb-linea);
+      border-radius: 6px;
+      background: var(--mb-niebla);
+      cursor: pointer;
+      user-select: none;
+    }
+    .opcion input:checked + span { background: var(--mb-azul); border-color: var(--mb-azul); color: var(--mb-blanco); }
+    .opcion input:focus-visible + span { outline: 3px solid var(--mb-azul); outline-offset: 2px; }
+
+    /* ===== Escala de dolor 0-10: 11 botones en fila ===== */
+    .escala { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; }
+    .escala .opcion span {
+      display: block; padding: 10px 0; text-align: center;
+      font-family: var(--mb-datos); font-variant-numeric: tabular-nums;
+    }
+    .escala-pie { display: flex; justify-content: space-between; font-size: 14px; color: var(--mb-acero); margin-top: 4px; }
+
+    /* ===== Señales de alerta: una fila por señal con Sí / No ===== */
+    .alerta-fila {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 12px 0; border-bottom: 1px solid var(--mb-linea);
+    }
+    .alerta-fila:last-child { border-bottom: 0; }
+    .alerta-fila .opciones { flex: none; flex-wrap: nowrap; }
+    .alerta-fila .opcion input[value="Sí"]:checked + span { background: var(--mb-alerta); border-color: var(--mb-alerta); }
+
+    /* ===== Privacidad y consentimiento ===== */
+    .privacidad {
+      font-size: 14px; color: var(--mb-acero);
+      border-left: 4px solid var(--mb-amarillo);
+      padding-left: 12px; margin-bottom: 16px;
+    }
+    .privacidad p { margin: 0 0 8px; }
+    .consentimiento { display: flex; gap: 12px; align-items: flex-start; font-weight: 600; }
+    .consentimiento input { width: 24px; height: 24px; flex: none; margin-top: 2px; accent-color: var(--mb-azul); }
+    a { color: var(--mb-azul); }
+
+    /* ===== Botón principal: amarillo con texto negro ===== */
+    button[type="submit"] {
+      width: 100%;
+      font-family: var(--mb-etiqueta); font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; font-size: 20px;
+      padding: 16px;
+      border: 0; border-radius: 6px;
+      background: var(--mb-amarillo); color: var(--mb-negro);
+      cursor: pointer;
+    }
+    .oculto { display: none; } /* trampa anti-spam: los humanos no la ven */
+    footer { text-align: center; font-size: 14px; color: var(--mb-acero); padding: 0 16px 32px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="marca">MARCOS BUSTAMANTE</div>
+  <div class="marca-sub">Fisio deportivo · Entrenamiento</div>
+  <h1>Ficha de pre-consulta</h1>
+  <p>Cuéntame tu caso antes de la primera sesión. Son unos 5 minutos. Así llego a la consulta sabiendo de dónde partimos.</p>
+</header>
+
+<main>
+  <!--
+    El formulario. Lo importante para Netlify:
+    - name="pre-consulta"       -> nombre con el que aparecerá en tu panel de Netlify.
+    - data-netlify="true"       -> "Netlify, recoge este formulario".
+    - netlify-honeypot="bot-field" -> filtro anti-spam (campo oculto más abajo).
+  -->
+  <form name="pre-consulta" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+    <!-- Campos ocultos que necesita Netlify -->
+    <input type="hidden" name="form-name" value="pre-consulta">
+    <!-- Asunto del email. El script del final añade el nombre del cliente. -->
+    <input type="hidden" name="subject" id="asunto" data-remove-prefix value="[Pre-consulta]">
+    <p class="oculto"><label>No rellenes esto: <input name="bot-field"></label></p>
+
+    <!-- ========== BLOQUE 1 · DATOS BÁSICOS ========== -->
+    <fieldset>
+      <legend>Datos básicos</legend>
+
+      <div class="pregunta">
+        <span class="titulo"><span class="num">01</span>Tus datos <span class="obligatorio">*</span></span>
+        <div class="fila">
+          <label for="nombre">Nombre y apellidos</label>
+          <input type="text" id="nombre" name="nombre" autocomplete="name" required>
+          <div class="dos-col">
+            <div class="fila">
+              <label for="edad">Edad</label>
+              <input type="number" id="edad" name="edad" min="10" max="100" inputmode="numeric" required>
+            </div>
+            <div class="fila">
+              <label for="telefono">Teléfono</label>
+              <input type="tel" id="telefono" name="telefono" autocomplete="tel" required>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pregunta">
+        <label class="titulo" for="deporte"><span class="num">02</span>¿Qué deporte o actividad haces?</label>
+        <input type="text" id="deporte" name="deporte" placeholder="Ej.: correr, pádel, gimnasio">
+        <div class="fila" style="margin-top:8px">
+          <label for="dias">¿Cuántos días a la semana?</label>
+          <select id="dias" name="dias_semana">
+            <option value="">Elige</option>
+            <option>0</option><option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6</option><option>7</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ========== BLOQUE 2 · MOTIVO DE LA CONSULTA ========== -->
+    <fieldset>
+      <legend>Motivo de la consulta</legend>
+
+      <div class="pregunta">
+        <label class="titulo" for="motivo"><span class="num">03</span>¿Qué te pasa o por qué vienes? <span class="obligatorio">*</span></label>
+        <textarea id="motivo" name="motivo" required placeholder="Cuéntalo con tus palabras"></textarea>
+      </div>
+
+      <div class="pregunta">
+        <span class="titulo"><span class="num">04</span>¿Dónde lo notas?</span>
+        <span class="ayuda">Puedes marcar varias zonas.</span>
+        <!-- name="zonas[]": los corchetes permiten marcar varias a la vez -->
+        <div class="opciones">
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Cuello"><span>Cuello</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Hombro"><span>Hombro</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Codo"><span>Codo</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Muñeca/mano"><span>Muñeca / mano</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Espalda alta"><span>Espalda alta</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Zona lumbar"><span>Zona lumbar</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Cadera/ingle"><span>Cadera / ingle</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Muslo"><span>Muslo</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Rodilla"><span>Rodilla</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Gemelo/pierna"><span>Gemelo / pierna</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Tobillo"><span>Tobillo</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Pie"><span>Pie</span></label>
+          <label class="opcion"><input type="checkbox" name="zonas[]" value="Otra"><span>Otra</span></label>
+        </div>
+        <span class="ayuda" style="margin-top:12px">¿De qué lado?</span>
+        <div class="opciones">
+          <label class="opcion"><input type="radio" name="lado" value="Izquierdo"><span>Izquierdo</span></label>
+          <label class="opcion"><input type="radio" name="lado" value="Derecho"><span>Derecho</span></label>
+          <label class="opcion"><input type="radio" name="lado" value="Ambos"><span>Ambos</span></label>
+        </div>
+      </div>
+
+      <div class="pregunta">
+        <span class="titulo"><span class="num">05</span>¿Desde cuándo? <span class="obligatorio">*</span></span>
+        <!-- type="radio": solo se puede elegir una opción del grupo -->
+        <div class="opciones">
+          <label class="opcion"><input type="radio" name="desde_cuando" value="Menos de 1 semana" required><span>Menos de 1 semana</span></label>
+          <label class="opcion"><input type="radio" name="desde_cuando" value="1-6 semanas"><span>1–6 semanas</span></label>
+          <label class="opcion"><input type="radio" name="desde_cuando" value="Más de 6 semanas"><span>Más de 6 semanas</span></label>
+        </div>
+      </div>
+
+      <div class="pregunta">
+        <span class="titulo"><span class="num">06</span>¿Cómo empezó?</span>
+        <div class="opciones">
+          <label class="opcion"><input type="radio" name="como_empezo" value="Golpe o gesto concreto"><span>Golpe o gesto concreto</span></label>
+          <label class="opcion"><input type="radio" name="como_empezo" value="Poco a poco"><span>Poco a poco</span></label>
+          <label class="opcion"><input type="radio" name="como_empezo" value="No lo sé"><span>No lo sé</span></label>
+        </div>
+      </div>
+
+      <div class="pregunta">
+        <span class="titulo"><span class="num">07</span>¿Cuánto te molesta del 0 al 10? <span class="obligatorio">*</span></span>
+        <span class="ayuda">En reposo</span>
+        <div class="escala">
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="0" required><span>0</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="1"><span>1</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="2"><span>2</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="3"><span>3</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="4"><span>4</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="5"><span>5</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="6"><span>6</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="7"><span>7</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="8"><span>8</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="9"><span>9</span></label>
+          <label class="opcion"><input type="radio" name="dolor_reposo" value="10"><span>10</span></label>
+        </div>
+        <span class="ayuda" style="margin-top:16px">Al moverte</span>
+        <div class="escala">
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="0" required><span>0</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="1"><span>1</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="2"><span>2</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="3"><span>3</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="4"><span>4</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="5"><span>5</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="6"><span>6</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="7"><span>7</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="8"><span>8</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="9"><span>9</span></label>
+          <label class="opcion"><input type="radio" name="dolor_movimiento" value="10"><span>10</span></label>
+        </div>
+        <div class="escala-pie"><span>0 = nada</span><span>10 = máximo</span></div>
+      </div>
+
+      <div class="pregunta">
+        <span class="titulo"><span class="num">08</span>¿Qué lo empeora y qué lo alivia?</span>
+        <div class="fila">
+          <label for="empeora">Lo empeora</label>
+          <textarea id="empeora" name="empeora" placeholder="Ej.: bajar escaleras, estar sentado mucho rato"></textarea>
+          <label for="alivia">Lo alivia</label>
+          <textarea id="alivia" name="alivia" placeholder="Ej.: calor, moverme un poco"></textarea>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ========== BLOQUE 3 · ANTECEDENTES ========== -->
+    <fieldset>
+      <legend>Antecedentes</legend>
+
+      <div class="pregunta">
+        <span class="titulo"><span class="num">09</span>Lesiones, operaciones y medicación</span>
+        <div class="fila">
+          <label for="lesiones">¿Lesiones u operaciones previas?</label>
+          <textarea id="lesiones" name="lesiones_previas" placeholder="Qué y cuándo, más o menos"></textarea>
+          <label for="medicacion">¿Tomas alguna medicación?</label>
+          <input type="text" id="medicacion" name="medicacion">
+        </div>
+      </div>
+
+      <div class="pregunta">
+        <label class="titulo" for="pruebas"><span class="num">10</span>¿Te ha visto un médico o tienes pruebas?</label>
+        <span class="ayuda">Resonancia, radiografía, ecografía… Si las tienes, tráelas a la primera sesión.</span>
+        <textarea id="pruebas" name="medico_pruebas"></textarea>
+      </div>
+    </fieldset>
+
+    <!-- ========== BLOQUE 4 · SEÑALES DE ALERTA ========== -->
+    <fieldset>
+      <legend>Señales de alerta</legend>
+      <div class="pregunta">
+        <span class="titulo"><span class="num">11</span>¿Tienes alguna de estas? <span class="obligatorio">*</span></span>
+        <!-- Cada señal es un grupo Sí/No propio, para que en el email se vea una por una -->
+        <div class="alerta-fila">
+          <span>Dolor que te despierta por la noche</span>
+          <div class="opciones">
+            <label class="opcion"><input type="radio" name="alerta_dolor_nocturno" value="Sí" required><span>Sí</span></label>
+            <label class="opcion"><input type="radio" name="alerta_dolor_nocturno" value="No"><span>No</span></label>
+          </div>
+        </div>
+        <div class="alerta-fila">
+          <span>Fiebre</span>
+          <div class="opciones">
+            <label class="opcion"><input type="radio" name="alerta_fiebre" value="Sí" required><span>Sí</span></label>
+            <label class="opcion"><input type="radio" name="alerta_fiebre" value="No"><span>No</span></label>
+          </div>
+        </div>
+        <div class="alerta-fila">
+          <span>Pérdida de peso sin motivo</span>
+          <div class="opciones">
+            <label class="opcion"><input type="radio" name="alerta_perdida_peso" value="Sí" required><span>Sí</span></label>
+            <label class="opcion"><input type="radio" name="alerta_perdida_peso" value="No"><span>No</span></label>
+          </div>
+        </div>
+        <div class="alerta-fila">
+          <span>Hormigueo</span>
+          <div class="opciones">
+            <label class="opcion"><input type="radio" name="alerta_hormigueo" value="Sí" required><span>Sí</span></label>
+            <label class="opcion"><input type="radio" name="alerta_hormigueo" value="No"><span>No</span></label>
+          </div>
+        </div>
+        <div class="alerta-fila">
+          <span>Pérdida de fuerza</span>
+          <div class="opciones">
+            <label class="opcion"><input type="radio" name="alerta_perdida_fuerza" value="Sí" required><span>Sí</span></label>
+            <label class="opcion"><input type="radio" name="alerta_perdida_fuerza" value="No"><span>No</span></label>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ========== BLOQUE 5 · EXPECTATIVAS ========== -->
+    <fieldset>
+      <legend>Expectativas</legend>
+
+      <div class="pregunta">
+        <span class="titulo"><span class="num">12</span>¿Qué esperas conseguir con las sesiones?</span>
+        <span class="ayuda">Puedes marcar varias.</span>
+        <div class="opciones">
+          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Que me deje de doler"><span>Que me deje de doler</span></label>
+          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Volver a entrenar o competir"><span>Volver a entrenar o competir</span></label>
+          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Mejorar el rendimiento"><span>Mejorar el rendimiento</span></label>
+          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Ganar movilidad"><span>Ganar movilidad</span></label>
+          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Prevenir lesiones"><span>Prevenir lesiones</span></label>
+          <label class="opcion"><input type="checkbox" name="expectativas[]" value="Moverme mejor en el día a día"><span>Moverme mejor en el día a día</span></label>
+        </div>
+      </div>
+
+      <div class="pregunta">
+        <label class="titulo" for="objetivo"><span class="num">13</span>Concreta un objetivo físico si lo tienes</label>
+        <input type="text" id="objetivo" name="objetivo" placeholder="Ej.: correr 10 km sin dolor">
+      </div>
+    </fieldset>
+
+    <!-- ========== PRIVACIDAD Y CONSENTIMIENTO ========== -->
+    <!-- PENDIENTE DE REVISIÓN LEGAL: este texto es un borrador, no está validado. -->
+    <fieldset>
+      <legend>Tus datos</legend>
+      <div class="privacidad">
+        <p><strong>Responsable:</strong> Marcos Bustamante De La Escalera (NIF 72207421W). Contacto: <a href="mailto:maarcosbustamantedle@gmail.com">maarcosbustamantedle@gmail.com</a>.</p>
+        <p><strong>Para qué:</strong> preparar tu primera sesión de fisioterapia y entrenamiento. Incluye datos de salud, que solo trato con tu consentimiento expreso.</p>
+        <p><strong>Quién más los ve:</strong> nadie más. Se guardan en Netlify (servicio del formulario) y me llegan por email (Gmail).</p>
+        <p><strong>Tus derechos:</strong> puedes pedirme ver, corregir o borrar tus datos, o retirar tu consentimiento, escribiendo al email de arriba. También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).</p>
+      </div>
+      <label class="consentimiento">
+        <input type="checkbox" name="consentimiento" value="Acepta" required>
+        <span>He leído la información de privacidad y doy mi consentimiento expreso para que se traten mis datos de salud con esta finalidad. <span class="obligatorio">*</span></span>
+      </label>
+    </fieldset>
+
+    <button type="submit">Enviar ficha</button>
+  </form>
+</main>
+
+<footer>Entrena sano. Rinde más.</footer>
+
+<script>
+  // Justo antes de enviar, pone el nombre del cliente en el asunto del email:
+  // "[Pre-consulta] Ana López"
+  document.querySelector('form').addEventListener('submit', function () {
+    var nombre = document.getElementById('nombre').value.trim();
+    document.getElementById('asunto').value = '[Pre-consulta] ' + nombre;
+  });
+</script>
+</body>
+</html>
