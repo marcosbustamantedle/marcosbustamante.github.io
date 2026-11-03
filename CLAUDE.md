@@ -13,7 +13,8 @@ Web pública de Marcos Bustamante, fisio deportivo y entrenador (Santander y onl
 | `index.html` | Página principal (~500 líneas). |
 | `pre-consulta/index.html` | Formulario de pre-consulta (13 preguntas en 5 bloques). Ya viene comentado por dentro, paso a paso. |
 | `pre-consulta/gracias.html` | Página que ve el cliente después de enviar el formulario. |
-| `docs/` | **Copia idéntica** de los tres ficheros de arriba. No sabemos cuál de las dos sirve GitHub Pages (raíz o `/docs`), así que cualquier cambio se hace en las dos copias y se comprueba con `diff -q index.html docs/index.html`. |
+| `practica-ventas/index.html` | App privada de Marcos para practicar llamadas de venta por voz con un cliente simulado (micro del navegador + Gemini gratis + Supabase "Ventas-practica"). Solo funciona con su enlace personal `#k=...`; `noindex`. No enlazar desde la web pública. |
+| `docs/` | **Copia idéntica** de los ficheros de arriba (incluida `practica-ventas/`). No sabemos cuál de las dos sirve GitHub Pages (raíz o `/docs`), así que cualquier cambio se hace en las dos copias y se comprueba con `diff -q index.html docs/index.html`. |
 | `.nojekyll` | Evita que GitHub procese la web con Jekyll. No borrar. |
 
 ## index.html por partes

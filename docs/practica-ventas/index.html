@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Práctica de ventas</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--mb-negro:#0B0B0D;--mb-amarillo:#FFD400;--mb-azul:#1E4FD8;--mb-azul-noche:#0D2A6B;--mb-niebla:#F4F6FA;--mb-acero:#5B6170;--mb-linea:#DFE3EC;--mb-ok:#1F9D55;--mb-alerta:#D64545;
+--d:"Anton",Impact,sans-serif;--t:"Barlow",system-ui,sans-serif;--e:"Barlow Condensed","Arial Narrow",sans-serif;--m:"IBM Plex Mono",ui-monospace,monospace;
+--bg:var(--mb-niebla);--sup:#fff;--tx:var(--mb-negro);--tx2:var(--mb-acero);--ln:var(--mb-linea);--lk:var(--mb-azul)}
+@media (prefers-color-scheme:dark){:root{--bg:#0B0B0D;--sup:#15161A;--tx:#EEF0F4;--tx2:#9AA1B0;--ln:#2A2C33;--lk:#8FB0FF}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 var(--t)}
+header{background:var(--mb-negro);color:#fff;padding:16px;position:relative;overflow:hidden}
+header .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:8px;background:var(--mb-amarillo);color:var(--mb-negro);font:24px/40px var(--d);text-align:center;flex:none}
+header h1{font:24px/1 var(--d);text-transform:uppercase;margin:0;letter-spacing:.01em}
+header small{display:block;font:600 13px var(--e);text-transform:uppercase;letter-spacing:.1em;color:#9AA1B0;margin-top:4px}
+.franjas{position:absolute;right:-20px;bottom:-6px;width:140px;height:40px;transform:skewX(-24deg)}
+.franjas i{display:block;height:10px;background:var(--mb-amarillo);margin-bottom:6px}.franjas i+i{height:3px;background:var(--mb-azul)}
+main{max-width:760px;margin:0 auto;padding:16px 16px 200px}
+h2{font:28px/1.1 var(--d);text-transform:uppercase;margin:24px 0 8px}
+h3{font:700 20px var(--t);margin:16px 0 8px}
+.card{background:var(--sup);border:1px solid var(--ln);border-radius:12px;padding:16px;margin:8px 0}
+.foco{border-left:6px solid var(--mb-amarillo)}
+.lbl{font:600 13px var(--e);text-transform:uppercase;letter-spacing:.1em;color:var(--tx2)}
+.mono{font-family:var(--m);font-variant-numeric:tabular-nums}
+button{font:700 16px var(--e);text-transform:uppercase;letter-spacing:.1em;border:0;border-radius:6px;padding:12px 16px;cursor:pointer}
+button:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--mb-azul);outline-offset:2px}
+.b1{background:var(--mb-amarillo);color:var(--mb-negro)}.b2{background:var(--mb-negro);color:#fff}
+@media (prefers-color-scheme:dark){.b2{background:#2A2C33}}
+.b3{background:transparent;color:var(--lk);border:2px solid var(--lk)}
+.bx{background:var(--mb-alerta);color:#fff}
+button:disabled{opacity:.5;cursor:default}
+.esc{display:flex;align-items:center;gap:12px;cursor:pointer;width:100%;text-align:left;background:var(--sup);color:var(--tx);border:1px solid var(--ln);border-radius:12px;padding:16px;margin:8px 0;text-transform:none;letter-spacing:0;font:600 17px var(--t)}
+.esc .n{font:28px/1 var(--d);color:var(--lk);min-width:44px}
+.esc .s{display:block;font:400 14px var(--t);color:var(--tx2)}
+.esc.rec{border:2px solid var(--mb-azul)}
+.tag{display:inline-block;font:600 12px var(--m);padding:2px 8px;border-radius:4px;background:#E6ECFB;color:var(--mb-azul);margin-left:6px;vertical-align:middle}
+.si{background:#DDF3E6;color:var(--mb-ok)}.no{background:#FBE3E3;color:var(--mb-alerta)}
+.hist{display:flex;justify-content:space-between;gap:8px;align-items:center;cursor:pointer}
+.chat{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.msg{max-width:85%;padding:10px 14px;border-radius:12px;white-space:pre-wrap}
+.msg.c{background:var(--sup);border:1px solid var(--ln);align-self:flex-start}
+.msg.m{background:var(--mb-azul);color:#fff;align-self:flex-end}
+.msg .who{font:600 12px var(--e);letter-spacing:.1em;text-transform:uppercase;opacity:.7;display:block}
+.msg button{padding:2px 8px;font-size:12px;margin-top:4px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--sup);border-top:1px solid var(--ln);padding:12px 16px}
+.bar .in{max-width:760px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;font:17px/1.4 var(--t);padding:10px;border:1px solid var(--ln);border-radius:6px;background:var(--bg);color:var(--tx);resize:none;min-height:48px;max-height:140px}
+.tip{font-size:14px;color:var(--tx2)}
+.dots::after{content:"";animation:d 1.2s infinite}@keyframes d{0%{content:""}33%{content:"."}66%{content:".."}100%{content:"..."}}
+table{border-collapse:collapse;width:100%;font-size:14px;display:block;overflow-x:auto}
+th,td{border-bottom:1px solid var(--ln);padding:6px 8px;text-align:left;vertical-align:top}
+th{font:600 13px var(--e);text-transform:uppercase;letter-spacing:.05em;color:var(--tx2)}
+blockquote{margin:8px 0;padding:8px 12px;border-left:4px solid var(--mb-amarillo);background:var(--bg)}
+.punt{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.punt div{background:var(--bg);border-radius:6px;padding:8px}
+.punt b{font:28px var(--d);display:block}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.err{color:var(--mb-alerta)}
+select{font:16px var(--t);padding:8px;border-radius:6px;border:1px solid var(--ln);background:var(--sup);color:var(--tx);max-width:100%}
+a{color:var(--lk)}
+.mic{width:64px;height:64px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;background:var(--mb-amarillo);color:var(--mb-negro);flex:none}
+.mic[data-est="escuchando"]{background:var(--mb-alerta);color:#fff;animation:pulso 1.2s infinite}
+.mic[data-est="hablando"]{background:var(--mb-azul);color:#fff}
+@keyframes pulso{0%{box-shadow:0 0 0 0 rgba(214,69,69,.5)}70%{box-shadow:0 0 0 14px rgba(214,69,69,0)}100%{box-shadow:0 0 0 0 rgba(214,69,69,0)}}
+.micLbl{font:600 15px var(--e);text-transform:uppercase;letter-spacing:.06em}
+.live{min-height:22px;font-size:15px;color:var(--tx2);font-style:italic}
+.tabs{display:flex;gap:4px;background:var(--sup);border:1px solid var(--ln);border-radius:12px;padding:4px;margin:8px 0 16px}
+.tabs button{flex:1;background:transparent;color:var(--tx2)}.tabs button.on{background:var(--mb-negro);color:#fff}
+@media (prefers-color-scheme:dark){.tabs button.on{background:var(--mb-amarillo);color:var(--mb-negro)}}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media (max-width:600px){.tile{padding:10px}.tile b{font-size:30px}.tile .s{font-size:12px;line-height:1.3;display:block}.tile .lbl{font-size:11px}}
+.tile{background:var(--sup);border:1px solid var(--ln);border-radius:12px;padding:12px 16px}
+.tile b{display:block;font:40px/1.1 var(--d);margin:4px 0}.tile .s{font-size:14px;color:var(--tx2)}
+.up{color:var(--mb-ok);font-weight:700}.down{color:var(--mb-alerta);font-weight:700}
+.chartw{position:relative}.chartw svg{width:100%;height:auto;display:block;overflow:visible}
+.tt{position:absolute;pointer-events:none;background:var(--mb-negro);color:#fff;border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.4;min-width:170px;transform:translate(-50%,-110%);z-index:2}
+.tt b{font-family:var(--m)}
+.leg{display:flex;gap:16px;font-size:14px;color:var(--tx2);margin-top:4px}
+.skill{display:grid;grid-template-columns:minmax(96px,130px) 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--ln)}
+.skill:last-child{border-bottom:0}
+.meter{display:flex;gap:2px}.meter i{flex:1;height:12px;border-radius:3px;background:var(--ln)}.meter i.f{background:var(--serie)}
+.skill .v{font-family:var(--m);font-size:14px;text-align:right;white-space:nowrap;min-width:64px}
+.skill .nm{font-weight:600}.skill .nm small{display:block;font-weight:400;font-size:12px}
+:root{--serie:#1E4FD8}@media (prefers-color-scheme:dark){:root{--serie:#5B82F0}}
+</style>
+</head>
+<body>
+<header><div class="in"><div class="logo">MB</div><div><h1>Práctica de ventas</h1><small>Cliente simulado por voz</small></div></div><div class="franjas"><i></i><i></i></div></header>
+<main id="app"><p class="dots">Cargando</p></main>
+<div class="bar" id="bar" hidden></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const CRIT = [["apertura","Apertura"],["diagnostico","Diagnóstico"],["escucha","Escucha"],["precio","Precio"],["objeciones","Objeciones"],["claridad","Claridad"],["cierre","Cierre"]];
+const SB_URL="https://idezagpddbxlfqlsjwtk.supabase.co", SB_KEY="sb_publishable_3W0PvPgdcbOEZBewGMO3mw_BZV_ox74";
+let LLAVE="", GKEY="", MODELO="";
+const ls={ get:k=>{try{return localStorage.getItem(k)||""}catch(e){return ""}}, set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}} };
+async function rpc(fn,args){
+  const r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:"POST",headers:{"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"},body:JSON.stringify(args)});
+  const t=await r.text(); if(!r.ok){ const e=new Error(/llave/.test(t)?"llave":"red ("+r.status+")"); e.code=/llave/.test(t)?"llave":"red"; throw e; }
+  return t?JSON.parse(t):null;
+}
+// ---------- Gemini ----------
+async function elegirModelo(){
+  try{
+    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",{headers:{"x-goog-api-key":GKEY}});
+    if(!r.ok){ const e=new Error("clave"); e.code=r.status===400||r.status===403?"clave":"red"; throw e; }
+    const j=await r.json();
+    const ok=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")).map(m=>m.name.replace(/^models\//,""))
+      .filter(n=>/^gemini-[\d.]+-flash$/.test(n) || /^gemini-[\d.]+-flash-latest$/.test(n));
+    const ver=n=>parseFloat((n.match(/gemini-([\d.]+)/)||[])[1]||0);
+    ok.sort((a,b)=>ver(b)-ver(a)); return ok[0]||"gemini-2.5-flash";
+  }catch(e){ if(e.code==="clave") throw e; return "gemini-2.5-flash"; }
+}
+async function gemini(prompt,{json=false,rapido=false}={}){
+  const cfg={}; if(json) cfg.responseMimeType="application/json";
+  if(rapido && /2\.5-flash/.test(MODELO)) cfg.thinkingConfig={thinkingBudget:0};
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:generateContent`,{method:"POST",headers:{"x-goog-api-key":GKEY,"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:cfg})});
+  if(!r.ok){ const e=new Error("gemini "+r.status); e.code=r.status===429?"limite":(r.status===400||r.status===403)?"clave":r.status===404?"modelo":"red"; throw e; }
+  const j=await r.json(); const c=(j.candidates||[])[0];
+  const text=((c&&c.content&&c.content.parts)||[]).filter(p=>!p.thought).map(p=>p.text||"").join("");
+  if(!text){ const e=new Error("respuesta vacía"); e.code="vacia"; throw e; } return {text};
+}
+const msgErr=err=>err.code==="limite"?"Has llegado al límite gratis de Google por ahora. Espera un minuto (o hasta mañana si has hecho muchas llamadas hoy).":err.code==="clave"?"Google no acepta tu clave. Revísala en Ajustes.":err.code==="llave"?"Tu enlace personal no es válido. Ábrelo otra vez desde el mensaje de Claude.":"No hay conexión o Google no ha respondido. Prueba otra vez.";
+const S = { escenarios: [], sesiones: [], progreso: "", vista: "inicio", tab: "practicar", llamada: null, detalle: null, error: "" };
+
+// ---------- Markdown mínimo ----------
+function inl(s){ return esc(s).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|[^*])\*([^*]+?)\*/g,"$1<i>$2</i>").replace(/\[\[(.+?)\]\]/g,"$1").replace(/`(.+?)`/g,"<code>$1</code>"); }
+function md(src){
+  const L = String(src||"").split("\n"); let o = "", i = 0;
+  while (i < L.length){
+    let l = L[i];
+    if (/^\|/.test(l)){ const rows=[]; while(i<L.length && /^\|/.test(L[i])){ rows.push(L[i]); i++; }
+      const cells = r => r.replace(/^\||\|$/g,"").split("|").map(c=>c.trim());
+      o += "<table><tr>"+cells(rows[0]).map(c=>"<th>"+inl(c)+"</th>").join("")+"</tr>";
+      rows.slice(1).filter(r=>!/^\|[\s\-:|]+\|$/.test(r)).forEach(r=>o+="<tr>"+cells(r).map(c=>"<td>"+inl(c)+"</td>").join("")+"</tr>");
+      o += "</table>"; continue; }
+    if (/^#{1,6} /.test(l)){ const n=l.match(/^#+/)[0].length; o += (n<=2?"<h3>":"<h3 style='font-size:17px'>")+inl(l.replace(/^#+ /,""))+"</h3>"; i++; continue; }
+    if (/^> ?/.test(l)){ let b=[]; while(i<L.length && /^> ?/.test(L[i])){ b.push(L[i].replace(/^> ?/,"")); i++; } o += "<blockquote>"+b.map(inl).join("<br>")+"</blockquote>"; continue; }
+    if (/^\s*[-*] /.test(l)){ o+="<ul>"; while(i<L.length && /^\s*[-*] /.test(L[i])){ o+="<li>"+inl(L[i].replace(/^\s*[-*] /,""))+"</li>"; i++; } o+="</ul>"; continue; }
+    if (/^\s*\d+\. /.test(l)){ o+="<ol>"; while(i<L.length && /^\s*\d+\. /.test(L[i])){ o+="<li>"+inl(L[i].replace(/^\s*\d+\. /,""))+"</li>"; i++; } o+="</ol>"; continue; }
+    if (l.trim()===""){ i++; continue; }
+    o += "<p>"+inl(l)+"</p>"; i++;
+  }
+  return o;
+}
+
+// ---------- Datos ----------
+const num = f => (f.match(/Escenario\s+(\d+)/i)||[])[1] || "??";
+const titulo = f => ((f.match(/^#\s*Escenario\s+\d+\s*:?\s*(.+)$/mi)||[])[1]||"").replace(/["“”«»]/g,"").trim();
+const sabe = f => ((f.match(/## Lo que sabe Marcos\s*\n([\s\S]*?)\n##/)||[])[1]||"").trim();
+const primera = f => { const m = f.match(/Primera frase:\**\s*["“«]?(.+?)["”»]?\s*$/mi); return m ? m[1].trim() : "Hola, buenas. Llamaba para preguntar una cosa."; };
+const foco = () => { const m = S.progreso.match(/## Foco actual\s*\n+([\s\S]*?)(\n## |$)/); return m ? m[1].trim() : ""; };
+
+async function cargar(){
+  try {
+    const d=await rpc("ventas_cargar",{k:LLAVE});
+    S.escenarios=d.escenarios||[]; S.sesiones=d.sesiones||[]; S.progreso=d.progreso||"";
+    GKEY=d.gemini_key||""; MODELO=d.modelo||""; S.error=""; S.llaveMala=false;
+  } catch(err){ if(err.code==="llave") S.llaveMala=true; S.error = err.code==="llave" ? msgErr(err) : "No he podido cargar tus datos. Revisa la conexión y recarga."; }
+}
+
+// ---------- Voz ----------
+let voces = [];
+function cargarVoces(){ try { voces = speechSynthesis.getVoices().filter(v=>/^es/i.test(v.lang)); } catch(e){ voces=[]; } }
+try { cargarVoces(); speechSynthesis.onvoiceschanged = () => { cargarVoces(); if (S.vista==="inicio") render(); }; } catch(e){}
+const FEM=/m[oó]nica|paulina|marisol|helena|laura|elvira|ximena|isabela|sabina|angelica|paloma|luc[ií]a|carmen|elena|dalia|francisca|catalina|esperanza|soledad|female|mujer/i;
+const MAS=/jorge|juan|diego|carlos|pablo|[aá]lvaro|alvaro|eddy|reed|rocko|grandpa|enrique|jos[eé]|gonzalo|tom[aá]s|male|hombre/i;
+function puntuarVoz(v){ let p=0; const n=v.name;
+  if (/premium/i.test(n)) p+=60; else if (/enhanced|mejorad/i.test(n)) p+=45;
+  if (/natural|neural|online/i.test(n)) p+=55; if (/google/i.test(n)) p+=30;
+  if (/eloquence|bad news|bells|bubbles|jester|organ|trinoids|whisper|wobble|zarvox|boing|cellos|superstar|albert|fred|junior|ralph|kathy|grandma|grandpa|sandy|shelley|flo|rocko|reed|eddy/i.test(n)) p-=80;
+  if (v.lang==="es-ES") p+=10; if (v.localService===false) p+=5; return p; }
+function generoCliente(){ const f=(S.llamada&&S.llamada.ficha)||""; const s=sabe(f)+" "+((f.match(/Nombre:\**\s*([^,]+)/)||[])[1]||"");
+  if (/una mujer|una persona.*ella|clienta|Luc[ií]a|Carmen|Mar[ií]a|Ana|Laura|Sara|Elena/i.test(s)) return "f";
+  if (/un hombre|un chico|Javier|Carlos|Jos[eé]|Pedro|Luis|Miguel|Antonio/i.test(s)) return "m"; return ""; }
+function vozElegida(){ let n=""; try{ n=localStorage.getItem("voz")||""; }catch(e){}
+  const fija=voces.find(v=>v.name===n); if (fija) return fija;
+  const g=generoCliente();
+  const orden=[...voces].sort((a,b)=>{ const ga=g==="f"?(FEM.test(a.name)?25:MAS.test(a.name)?-25:0):g==="m"?(MAS.test(a.name)?25:FEM.test(a.name)?-25:0):0;
+    const gb=g==="f"?(FEM.test(b.name)?25:MAS.test(b.name)?-25:0):g==="m"?(MAS.test(b.name)?25:FEM.test(b.name)?-25:0):0;
+    return (puntuarVoz(b)+gb)-(puntuarVoz(a)+ga); });
+  return orden[0]||null; }
+function limpiarHabla(t){ return t.replace(/\[CUELGA\]/g,"").replace(/\beh+…+/gi,"eh,").replace(/…/g,", ").replace(/\s*\([^)]*\)\s*/g," ").replace(/\s+/g," ").trim(); }
+let hablando=false, antesDeHablar=null, tAuto=null;
+function finHabla(){ if(!hablando) return; hablando=false; antesDeHablar=null; if (S.llamada && !S.llamada.colgo && !S.llamada.pensando && manos()) setTimeout(escuchar, 250); else pintarMic(); }
+function hablar(t){
+  try {
+    if (!window.speechSynthesis || ls.get("mudo")==="1"){ hablando=true; finHabla(); return; }
+    speechSynthesis.cancel(); pararMic();
+    hablando=true; antesDeHablar=null; pintarMic();
+    const v = vozElegida();
+    const trozos = limpiarHabla(t).match(/[^.!?¿¡]+[.!?]*|[¿¡][^?!]+[?!]/g) || [limpiarHabla(t)];
+    const lista = trozos.map(x=>x.trim()).filter(Boolean);
+    lista.forEach((x,i)=>{
+      const u = new SpeechSynthesisUtterance(x);
+      if (i===lista.length-1){ u.onend = finHabla; u.onerror = finHabla; }
+      if (v){ u.voice = v; u.lang = v.lang; } else u.lang = "es-ES";
+      u.rate = 0.98 + Math.random()*0.08; u.pitch = 1;
+      speechSynthesis.speak(u);
+    });
+    if (!lista.length) finHabla();
+    setTimeout(()=>{ if (hablando && !speechSynthesis.speaking) finHabla(); }, 1500 + t.length*90);
+  } catch(e){ hablando=false; }
+}
+const manos = () => ls.get("manos")!=="0";
+// ---------- Micro ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec=null, escuchando=false, textoFinal="", textoParcial="", tSil=null, enviado=false;
+function pintarMic(){
+  const b=$("#mic"), l=$("#micLbl"), live=$("#live"); if(!b) return;
+  const ll=S.llamada; let est="listo";
+  if(!ll||ll.colgo) est="fin"; else if(ll.pensando) est="pensando"; else if(hablando) est="hablando"; else if(escuchando) est="escuchando";
+  b.dataset.est=est; b.disabled = est==="fin"||est==="pensando";
+  l.textContent = {listo:"Toca para hablar",escuchando:"Te escucho… cuando calles, se envía",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est];
+  if(live) live.textContent = (textoFinal+" "+textoParcial).trim();
+}
+function escuchar(gesto){
+  if(!SR || !S.llamada || S.llamada.pensando || S.llamada.colgo) return;
+  if(hablando){ try{speechSynthesis.cancel()}catch(e){} hablando=false; }
+  if(escuchando) return;
+  textoFinal=""; textoParcial=""; enviado=false;
+  rec=new SR(); rec.lang="es-ES"; rec.interimResults=true; rec.continuous=true;
+  rec.onresult=ev=>{ let f="",p=""; for(let i=0;i<ev.results.length;i++){ const r=ev.results[i]; if(r.isFinal) f+=r[0].transcript+" "; else p+=r[0].transcript+" "; } textoFinal=f.trim(); textoParcial=p.trim(); pintarMic(); clearTimeout(tSil); tSil=setTimeout(cerrarTurno, 1600); };
+  rec.onerror=ev=>{ if((ev.error==="not-allowed"||ev.error==="service-not-allowed") && gesto){ S.llamada.error="No tengo permiso para usar el micrófono. Actívalo para esta página en los ajustes del navegador (o escribe abajo)."; escuchando=false; render(); } };
+  rec.onend=()=>{ escuchando=false; clearTimeout(tSil); const t=(textoFinal+" "+textoParcial).trim(); if(!enviado && t){ enviado=true; enviarTexto(t); } else pintarMic(); };
+  try{ rec.start(); escuchando=true; }catch(e){ escuchando=false; }
+  pintarMic();
+}
+function cerrarTurno(){ if(rec&&escuchando){ try{rec.stop()}catch(e){} } }
+function pararMic(){ if(rec){ enviado=true; try{rec.abort()}catch(e){} } escuchando=false; clearTimeout(tSil); }
+
+// ---------- Prompts ----------
+const REGLAS_CLIENTE = `Eres un cliente simulado para que Marcos, fisioterapeuta y entrenador, practique ventas por TELÉFONO.
+- Conviértete en el cliente de la ficha. No reveles la parte "Oculto" salvo que Marcos haga las preguntas adecuadas.
+- Habla como una persona real al teléfono: frases cortas, algún "eh…". Una o dos frases por turno, nunca párrafos.
+- No le pongas las cosas fáciles. Saca tus objeciones cuando toque, no todas a la vez.
+- Reacciona con realismo: si te presiona, te enfrías; si te escucha, te abres; si se enrolla, te impacientas.
+- Si la llamada se alarga sin rumbo o te sientes presionado, despídete y cuelga.
+- Decide si contratas siguiendo las condiciones de la ficha. No le regales la venta.
+- No salgas del personaje ni des consejos.`;
+
+function promptVoz(e){
+  return `${REGLAS_CLIENTE}
+
+ESTO ES UNA LLAMADA EN MODO VOZ
+- Usa SOLO la ficha de abajo. No la leas en voz alta ni la resumas.
+- Empieza directamente con la "Primera frase" y espera a que Marcos conteste.
+
+AL TERMINAR
+- Cuando Marcos diga "fin de la llamada" (o cuando cuelgues), sal del personaje y responde SOLO con:
+1. "¿Habría contratado?": Sí / No / Quizás, en una frase.
+2. La transcripción completa en texto, una línea por intervención, con el formato:
+MARCOS: ...
+CLIENTE: ...
+- No evalúes ni des feedback.
+
+FICHA DEL ESCENARIO (no la leas en voz alta):
+
+${e.ficha}
+
+Empieza ya la llamada con la Primera frase.`;
+}
+function parsearTranscripcion(txt){
+  const turnos=[]; let veredicto="";
+  String(txt||"").split(/\r?\n/).forEach(l=>{
+    const m=l.match(/^\s*\**\s*(MARCOS|CLIENTE|CLIENTA|T[UÚ]|YO)\s*\**\s*:\s*\**\s*(.*)$/i);
+    if (m){ const q=/^(MARCOS|T[UÚ]|YO)$/i.test(m[1])?"m":"c"; if (m[2].trim()) turnos.push({q,t:m[2].trim()}); else turnos.push({q,t:""}); }
+    else if (turnos.length && l.trim()) turnos[turnos.length-1].t=(turnos[turnos.length-1].t+" "+l.trim()).trim();
+    else if (!turnos.length && /contratad/i.test(l)) veredicto=(veredicto+" "+l.trim()).trim();
+  });
+  return {turnos:turnos.filter(t=>t.t), veredicto};
+}
+function promptCliente(ll){
+  const tr = ll.turnos.map(t=>(t.q==="m"?"MARCOS: ":"CLIENTE: ")+t.t).join("\n");
+  return `${REGLAS_CLIENTE}
+
+FICHA DEL ESCENARIO:
+${ll.ficha}
+
+LLAMADA HASTA AHORA:
+${tr}
+
+Escribe SOLO lo siguiente que dice el CLIENTE, sin "CLIENTE:" delante, sin comillas, sin acotaciones. Si en este turno cuelgas (porque cierras cita y te despides, o porque te vas), termina tu frase con [CUELGA].`;
+}
+
+function promptEval(ll, ses){
+  const tr = ll.turnos.map(t=>(t.q==="m"?"MARCOS: ":"CLIENTE: ")+t.t).join("\n");
+  const prev = ses.slice(0,3).map(s=>`--- ${s.fecha} · Escenario ${s.escenario} (${s.contrato}) · foco dado: ${s.foco||""}`).join("\n");
+  const lista = S.escenarios.map(e=>`${e.numero}: ${e.titulo}`).join("\n");
+  const hoy = new Date().toISOString().slice(0,10);
+  return `Eres el entrenador de ventas de Marcos (fisioterapeuta y entrenador). Evalúa esta llamada simulada por teléfono.
+
+NORMAS
+- Feedback totalmente imparcial: nada de elogios para agradar, Marcos quiere mejorar.
+- Cita frases exactas de la transcripción para justificar cada punto.
+- Un solo foco por sesión.
+- Español, corto y directo, de tú.
+
+FICHA DEL ESCENARIO ${ll.numero}:
+${ll.ficha}
+
+PROGRESO ACTUAL (léelo antes de evaluar):
+${S.progreso || "(todavía no hay progreso guardado)"}
+
+ÚLTIMAS LLAMADAS:
+${prev || "(ninguna)"}
+
+ESCENARIOS QUE EXISTEN:
+${lista}
+
+TRANSCRIPCIÓN (${hoy})${ll.colgo ? " — el cliente colgó" : " — Marcos terminó la llamada"}${ll.veredicto ? ". El cliente simulado dijo al final: "+ll.veredicto : ""}:
+${tr}
+
+QUÉ TIENES QUE HACER
+1. Puntúa de 1 a 5 cada criterio citando la frase exacta: Apertura y control; Preguntas de diagnóstico (¿descubrió el objetivo real y lo oculto?); Escucha activa (¿reformuló?); Manejo del precio (¿lo dio antes de entender el caso?); Manejo de objeciones; Claridad y lenguaje (muletillas, jerga, frases largas); Cierre (¿cita concreta con día y hora?).
+2. Los 2 momentos clave donde se perdió (o ganó) la venta, con la frase que debería haber dicho.
+3. Un solo foco para la próxima llamada.
+4. Reescribe progreso.md completo: añade una fila a la tabla de historial (fecha ${hoy}, escenario, ¿contrató?, puntuaciones), actualiza "Errores recurrentes" (solo errores en 2 llamadas o más), "Foco actual" con el foco nuevo, pasa el foco anterior a "Focos anteriores" con cómo le fue, y marca como superado un foco si en esta llamada lo hizo bien. Mantén la misma estructura de secciones.
+5. Recomienda el siguiente escenario. Si ninguno entrena el foco, crea una ficha nueva con el mismo formato (# Escenario NN: "título" / ## Lo que sabe Marcos / ## Oculto (solo para el cliente simulado) con Nombre, Situación, Objetivo real, Lo que ha probado, Objeción principal, Objeción secundaria, Personalidad, Contrata si, No contrata si, Primera frase).
+
+Responde SOLO con un JSON válido, sin texto antes ni después, con esta forma:
+{"contrato":"Sí|No|Quizás","contrato_frase":"una frase","puntos":{"apertura":n,"diagnostico":n,"escucha":n,"precio":n,"objeciones":n,"claridad":n,"cierre":n},"feedback_md":"feedback completo en Markdown: título '# Feedback — Escenario NN: título (fecha)', ¿Contrató?, tabla | Criterio | Nota | Por qué (frase de la transcripción) |, ## Los 2 momentos clave (con > En vez de eso: *frase*), ## Foco para la próxima llamada","foco":"el foco en una frase","progreso_md":"progreso.md completo","siguiente":{"numero":"NN","motivo":"una frase"},"nueva_ficha":null}
+Si creas ficha nueva, nueva_ficha es {"numero":"NN","titulo":"título corto","ficha_md":"ficha completa"}.`;
+}
+
+function sacarJSON(t){
+  const a = t.indexOf("{"), b = t.lastIndexOf("}");
+  if (a<0||b<0) throw new Error("La evaluación no vino en el formato esperado.");
+  return JSON.parse(t.slice(a,b+1));
+}
+
+// ---------- Acciones ----------
+function empezar(id){
+  const e = S.escenarios.find(x=>x.id===id); if (!e) return;
+  if (!GKEY){ S.vista="ajustes"; render(); return; }
+  const p = primera(e.ficha);
+  S.llamada = { inicio:Date.now(), escId:e.id, numero:e.numero, titulo:e.titulo, ficha:e.ficha, turnos:[{q:"c",t:p}], pensando:false, colgo:false, error:"" };
+  S.vista = "llamada"; render(); window.scrollTo(0,0); hablar(p);
+}
+function enviarEscrito(){ const ta=$("#in"); if(!ta) return; const t=ta.value.trim(); if(!t) return; ta.value=""; pararMic(); enviarTexto(t); }
+async function enviarTexto(txt){
+  const ll = S.llamada; if (!ll || ll.pensando || ll.colgo || !txt) return;
+  ll.turnos.push({q:"m",t:txt}); ll.pensando = true; ll.error = ""; render();
+  try {
+    const r = await gemini(promptCliente(ll), {rapido:true});
+    let t = (r.text||"").trim().replace(/^\**CLIENTE:?\**\s*/i,"").replace(/^["“]|["”]$/g,"");
+    const cuelga = /\[CUELGA\]/.test(t); t = t.replace(/\s*\[CUELGA\]\s*/g," ").trim();
+    ll.turnos.push({q:"c",t}); if (cuelga) ll.colgo = true;
+    ll.pensando = false; render(); hablar(t);
+  } catch(err){
+    ll.turnos.pop(); ll.pensando = false;
+    if (err.code==="modelo"){ MODELO=""; try{ MODELO=await elegirModelo(); await rpc("ventas_guardar_ajustes",{k:LLAVE,gk:null,mo:MODELO}); }catch(e){} }
+    ll.error = msgErr(err)+" Lo que dijiste: «"+txt+"». Repítelo o escríbelo abajo."; render();
+  }
+}
+
+async function colgar(){
+  const ll = S.llamada; if (!ll) return;
+  try { speechSynthesis.cancel(); } catch(e){} hablando=false; pararMic();
+  if (ll.turnos.filter(t=>t.q==="m").length === 0){ S.llamada=null; S.vista="inicio"; render(); return; }
+  S.vista = "evaluando"; render();
+  try {
+    pararMic();
+    const r = await gemini(promptEval(ll, S.sesiones), {json:true});
+    const ev = sacarJSON(r.text||"");
+    const hoy = new Date().toISOString().slice(0,10);
+    const slug = (ll.escId.split("_").slice(1).join("_") || "llamada").slice(0,40);
+    const id = `${hoy}_esc${ll.numero}_${slug}_${Date.now().toString(36)}`;
+    const transcripcion = ll.turnos.map(t=>(t.q==="m"?"MARCOS: ":"CLIENTE: ")+t.t).join("\n");
+    const doc = { fecha:hoy, creado:Date.now(), escenario:ll.numero, escId:ll.escId, titulo:ll.titulo,
+      contrato:ev.contrato||"", contratoFrase:ev.contrato_frase||"", puntos:ev.puntos||{}, foco:ev.foco||"",
+      feedback:ev.feedback_md||"", transcripcion, siguiente:ev.siguiente||null, sincronizado:false };
+    delete doc.sincronizado;
+    await rpc("ventas_guardar_sesion",{k:LLAVE,sid:id,d:doc});
+    if (ev.progreso_md) await rpc("ventas_guardar_progreso",{k:LLAVE,m:ev.progreso_md});
+    if (ev.nueva_ficha && ev.nueva_ficha.ficha_md){
+      const nf = ev.nueva_ficha, n = String(nf.numero).padStart(2,"0");
+      const fid = n + "_" + (nf.titulo||"nuevo").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,30);
+      await rpc("ventas_guardar_escenario",{k:LLAVE,eid:fid,num:n,tit:nf.titulo||"",f:nf.ficha_md});
+    }
+    await cargar();
+    S.llamada = null; S.detalle = id; S.vista = "detalle"; render();
+  } catch(err){
+    S.vista = "llamada"; ll.error = "No he podido evaluar la llamada. "+msgErr(err)+" Pulsa «Colgar y evaluar» otra vez; la llamada sigue aquí.";
+    render();
+  }
+}
+
+
+// ---------- Progreso ----------
+const nota = s => { const v = CRIT.map(([k])=>+((s.puntos||{})[k])).filter(x=>x>0); return v.length ? Math.round(v.reduce((a,b)=>a+b,0)/v.length*20)/10 : null; };
+const vendio = s => /^s/i.test(s.contrato||"");
+const fmt = n => String(n).replace(".",",");
+function seccion(nombre){ const m = S.progreso.match(new RegExp("## "+nombre+"\\s*\\n+([\\s\\S]*?)(\\n## |$)")); return m ? m[1].trim() : ""; }
+function bullets(t){ return t.split("\n").filter(l=>/^\s*[-*] /.test(l)).map(l=>l.replace(/^\s*[-*] /,"")); }
+
+function grafica(ses){
+  const W=window.innerWidth<600?360:640,H=window.innerWidth<600?200:220,L=28,R=18,T=18,B=40, n=ses.length;
+  const x=i=> n===1 ? (L+W-R)/2 : L+i*(W-L-R)/(n-1), y=v=>T+(10-v)*(H-T-B)/10;
+  let g="";
+  [0,5,10].forEach(v=>{ g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--ln)" stroke-width="1"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="12" fill="var(--tx2)" font-family="IBM Plex Mono">${v}</text>`; });
+  const pts=ses.map((s,i)=>[x(i),y(nota(s)||0)]);
+  if (n>1) g+=`<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--serie)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  ses.forEach((s,i)=>{ const [px,py]=pts[i], v=vendio(s);
+    g+=`<circle cx="${px}" cy="${py}" r="6" fill="${v?"var(--serie)":"var(--sup)"}" stroke="var(--serie)" stroke-width="2"/>`;
+    if (i===n-1) g+=`<text x="${px}" y="${py-12}" text-anchor="middle" font-size="13" font-weight="600" fill="var(--tx)" font-family="IBM Plex Mono">${fmt(nota(s))}</text>`;
+    const d=s.fecha.slice(8,10)+"/"+s.fecha.slice(5,7);
+    g+=`<text x="${px}" y="${H-B+18}" text-anchor="middle" font-size="12" fill="var(--tx2)">${d}</text><text x="${px}" y="${H-B+33}" text-anchor="middle" font-size="12" fill="var(--tx2)" font-family="IBM Plex Mono">Esc ${esc(s.escenario)}</text>`;
+    g+=`<circle class="hit" data-i="${i}" cx="${px}" cy="${py}" r="18" fill="transparent" style="cursor:pointer"/>`;
+  });
+  return `<div class="chartw"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Nota de cada llamada sobre 10">${g}</svg><div class="tt" id="tt" hidden></div></div>
+  <div class="leg"><span><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="var(--serie)"/></svg> Contrató</span><span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--serie)" stroke-width="2"/></svg> No contrató</span></div>`;
+}
+
+function vProgreso(){
+  const ses=[...S.sesiones].filter(s=>nota(s)!==null).sort((a,b)=>(a.creado||0)-(b.creado||0));
+  if (!ses.length) return `<p>Haz tu primera llamada y aquí verás cómo mejoras.</p>`;
+  const u=ses[ses.length-1], a=ses[ses.length-2], ventas=ses.filter(vendio).length;
+  const dif = a ? Math.round((nota(u)-nota(a))*10)/10 : null;
+  const sig=(S.sesiones[0]&&S.sesiones[0].siguiente&&S.sesiones[0].siguiente.numero)||"";
+  const eSig=S.escenarios.find(e=>String(e.numero)===String(sig).padStart(2,"0"));
+  let h=`<div class="card foco"><div class="lbl">Tu foco ahora</div>${md(foco())}${eSig?`<button class="b1" data-esc="${esc(eSig.id)}">Practicarlo: escenario ${esc(eSig.numero)}</button>`:""}</div>`;
+  h+=`<div class="tiles">
+   <div class="tile"><div class="lbl">Última nota</div><b class="mono">${fmt(nota(u))}<small style="font-size:20px">/10</small></b><span class="s">${dif===null?"Primera llamada":dif>0?`<span class="up">↑ ${fmt(dif)}</span> vs la anterior`:dif<0?`<span class="down">↓ ${fmt(-dif)}</span> vs la anterior`:"Igual que la anterior"}</span></div>
+   <div class="tile"><div class="lbl">Ventas cerradas</div><b class="mono">${ventas}<small style="font-size:20px"> de ${ses.length}</small></b><span class="s">el cliente contrató</span></div>
+   <div class="tile"><div class="lbl">Mejor nota</div><b class="mono">${fmt(Math.max(...ses.map(nota)))}<small style="font-size:20px">/10</small></b><span class="s">tu récord</span></div></div>`;
+  h+=`<h2>Tu nota en cada llamada</h2><div class="card">${grafica(ses)}<p class="tip" style="margin:8px 0 0">Media de las 7 habilidades, sobre 10. Toca un punto para ver el detalle.</p></div>`;
+  const media=k=>ses.reduce((t,s)=>t+(+s.puntos[k]||0),0)/ses.length;
+  const ord=CRIT.map(([k])=>k).sort((p,q)=>media(p)-media(q)), debil=ord[0], fuerte=ord[ord.length-1];
+  h+=`<h2>Tus 7 habilidades</h2><p class="tip">Nota de tu última llamada, de 1 a 5, y cómo cambió respecto a la anterior.</p><div class="card">`;
+  CRIT.forEach(([k,nm])=>{ const v=+u.puntos[k]||0, pv=a?(+a.puntos[k]||0):null, d=pv===null?null:v-pv;
+    h+=`<div class="skill"><span class="nm">${nm}${k===debil?'<small class="down">Tu punto débil</small>':k===fuerte?'<small class="up">Tu punto fuerte</small>':""}</span><span class="meter" aria-label="${v} de 5">${[1,2,3,4,5].map(i=>`<i class="${i<=v?"f":""}"></i>`).join("")}</span><span class="v">${v}/5 ${d===null?"":d>0?`<span class="up">↑${d}</span>`:d<0?`<span class="down">↓${-d}</span>`:'<span style="color:var(--tx2)">=</span>'}</span></div>`; });
+  h+=`</div>`;
+  const err=bullets(seccion("Errores recurrentes"));
+  if (err.length) h+=`<h2>Errores que se repiten</h2><div class="card"><ul>${err.map(e=>"<li>"+inl(e)+"</li>").join("")}</ul></div>`;
+  const sup=bullets(seccion("Focos superados")), ant=bullets(seccion("Focos anteriores"));
+  if (sup.length||ant.length) h+=`<h2>Focos trabajados</h2><div class="card">${sup.length?`<div class="lbl up">Superados</div><ul>${sup.map(e=>"<li>"+inl(e)+"</li>").join("")}</ul>`:""}${ant.length?`<div class="lbl">En camino</div><ul>${ant.map(e=>"<li>"+inl(e)+"</li>").join("")}</ul>`:""}</div>`;
+  h+=`<details class="card"><summary><b>Ver todas las notas en tabla</b></summary><table><tr><th>Fecha</th><th>Esc.</th><th>¿Contrató?</th>${CRIT.map(([,n])=>"<th>"+n+"</th>").join("")}<th>Nota</th></tr>${ses.map(s=>`<tr><td class="mono">${esc(s.fecha)}</td><td>${esc(s.escenario)}</td><td>${esc(s.contrato)}</td>${CRIT.map(([k])=>`<td class="mono">${esc(s.puntos[k])}</td>`).join("")}<td class="mono">${fmt(nota(s))}</td></tr>`).join("")}</table></details>`;
+  S._ses=ses; return h;
+}
+function tooltip(i){ const s=S._ses[i], tt=$("#tt"), c=document.querySelector(`.hit[data-i="${i}"]`); if(!tt||!c) return;
+  const svg=c.ownerSVGElement, r=svg.getBoundingClientRect(), k=r.width/svg.viewBox.baseVal.width;
+  tt.innerHTML=`<div>${esc(s.fecha)} · Esc. ${esc(s.escenario)} ${esc(s.titulo)}</div><div>Nota <b>${fmt(nota(s))}/10</b> · ${vendio(s)?"Contrató":"No contrató"}</div><div class="mono" style="opacity:.8">${CRIT.map(([k,n])=>n.slice(0,4)+" "+s.puntos[k]).join(" · ")}</div>`;
+  let left=c.cx.baseVal.value*k; left=Math.max(95,Math.min(r.width-95,left)); tt.style.left=left+"px"; tt.style.top=(c.cy.baseVal.value*k)+"px"; tt.hidden=false; }
+
+// ---------- Vistas ----------
+function vInicio(){
+  const tabs = `<div class="tabs" role="tablist"><button class="${S.tab==="practicar"?"on":""}" data-tab="practicar">Practicar</button><button class="${S.tab==="progreso"?"on":""}" data-tab="progreso">Mi progreso</button></div>`;
+  if (S.tab==="progreso") return tabs + vProgreso();
+  return tabs + vPracticar();
+}
+function vPracticar(){
+  const f = foco(); const sigN = (S.sesiones[0]&&S.sesiones[0].siguiente&&S.sesiones[0].siguiente.numero)||"";
+  const pend = S.sesiones.filter(s=>!s.sincronizado).length;
+  let h = S.error ? `<p class="err">${esc(S.error)}</p>` : "";
+  h += `<div class="card foco"><div class="lbl">Tu foco ahora</div>${f ? md(f) : "<p>Todavía sin foco. Haz tu primera llamada.</p>"}</div>`;
+  h += `<h2>Elige cliente</h2><p class="tip">Toca un cliente y empieza la llamada. Te habla en voz alta; tú pulsas el micro y hablas. Cuando te callas, el cliente contesta y el micro se vuelve a abrir solo. Mejor con auriculares.</p>`;
+  if (!S.escenarios.length) h += `<p>No hay escenarios todavía.</p>`;
+  S.escenarios.forEach(e=>{
+    const hechas = S.sesiones.filter(s=>s.escId===e.id || s.escenario===e.numero).length;
+    const rec = String(sigN).padStart(2,"0")===String(e.numero);
+    h += `<button class="esc ${rec?"rec":""}" data-esc="${esc(e.id)}"><span class="n">${esc(e.numero)}</span><span>${esc(e.titulo)}${rec?'<span class="tag">Te toca</span>':""}<span class="s">${esc(sabe(e.ficha))}${hechas?` · ${hechas} llamada${hechas>1?"s":""}`:""}</span></span></button>`;
+  });
+  h += `<h2>Tus llamadas</h2>`;
+  if (!S.sesiones.length) h += `<p class="tip">Las llamadas que hagas aquí aparecerán en esta lista.</p>`;
+  S.sesiones.forEach(s=>{
+    const c = /^s/i.test(s.contrato) ? "si" : /^n/i.test(s.contrato) ? "no" : "";
+    h += `<div class="card hist" data-ses="${esc(s.id)}"><span><span class="mono">${esc(s.fecha)}</span> · Esc. ${esc(s.escenario)} ${esc(s.titulo)}</span><span class="tag ${c}">${esc(s.contrato||"?")}</span></div>`;
+  });
+  if (pend) h += `<p class="tip">${pend} llamada${pend>1?"s":""} sin pasar todavía a tu cerebro de Obsidian. Para pasarlas, dile a Claude en tu proyecto: «sincroniza las llamadas».</p>`;
+  h += `<h2>Ajustes</h2><div class="card"><div class="lbl">Voz del cliente</div><div class="row"><select id="voz"><option value="">Automática (la mejor, hombre o mujer según el cliente)</option>${[...voces].sort((a,b)=>puntuarVoz(b)-puntuarVoz(a)).map(v=>`<option ${(()=>{try{return localStorage.getItem("voz")===v.name}catch(e){return false}})()?"selected":""}>${esc(v.name)} (${esc(v.lang)})</option>`).join("")}</select><button class="b3" id="probar">Probar</button></div>
+  <p class="tip">Para una voz mucho más natural, descarga una voz «Mejorada» o «Premium» en español: en el iPhone, Ajustes › Accesibilidad › Contenido leído › Voces › Español; en el Mac, Ajustes del Sistema › Accesibilidad › Contenido leído › Voz del sistema › Gestionar voces. Luego recarga esta página.</p><label class="tip" style="display:block"><input type="checkbox" id="manos" ${manos()?"checked":""}> Manos libres: el micro se abre solo cuando el cliente termina</label><button class="b3" id="irAj" style="margin-top:8px">Clave de Google</button><label class="tip"><input type="checkbox" id="mudo" ${(()=>{try{return localStorage.getItem("mudo")==="1"}catch(e){return false}})()?"checked":""}> Sin voz (solo texto)</label></div>`;
+  return h;
+}
+
+function vLlamada(){
+  const ll = S.llamada;
+  let h = `<div class="row" style="justify-content:space-between;align-items:center"><div><div class="lbl">En llamada · Escenario ${esc(ll.numero)}</div><h2 style="margin:0">${esc(ll.titulo)}</h2></div></div>`;
+  h += `<p class="tip">${esc(sabe(ll.ficha))}</p>`;
+  if(!SR) h+=`<p class="err">Este navegador no permite hablar con la página. Usa Safari en el iPhone o Chrome/Safari en el Mac. Mientras, puedes escribir abajo.</p>`;
+  h += `<div class="chat">`;
+  ll.turnos.forEach((t,i)=>{
+    h += `<div class="msg ${t.q==="m"?"m":"c"}"><span class="who">${t.q==="m"?"Tú":"Cliente"}</span>${esc(t.t)}${t.q==="c"?`<br><button class="b3" data-rep="${i}">Repetir</button>`:""}</div>`;
+  });
+  if (ll.pensando) h += `<div class="msg c dots">…</div>`;
+  if (ll.colgo) h += `<p class="tip"><b>El cliente ha colgado.</b> Pulsa «Colgar y evaluar».</p>`;
+  h += `</div>`;
+  if (ll.error) h += `<p class="err">${esc(ll.error)}</p>`;
+  return h;
+}
+
+function vAjustes(){
+  return `<button class="b3" id="volver">← Inicio</button><h2>Conecta la IA gratis de Google</h2>
+  <div class="card foco"><ol style="padding-left:20px;margin:0">
+  <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
+  <li style="margin-top:8px">Pulsa <b>Create API key</b> (Crear clave). Es gratis y no pide tarjeta.</li>
+  <li style="margin-top:8px">Copia la clave (empieza por <span class="mono">AIza</span>) y pégala aquí:</li></ol>
+  <input id="gk" type="password" autocomplete="off" placeholder="AIza…" style="width:100%;font:16px var(--m);padding:10px;margin-top:12px;border:1px solid var(--ln);border-radius:6px;background:var(--bg);color:var(--tx)">
+  ${S.errAj?`<p class="err">${esc(S.errAj)}</p>`:""}
+  <div class="row"><button class="b1" id="guardarGk">Guardar</button></div>
+  <p class="tip">Se guarda en tu base de datos privada, así que solo la pones una vez: el móvil y el ordenador la comparten. Con la versión gratis, Google puede usar estas conversaciones para mejorar sus productos.</p></div>
+  ${GKEY?`<p class="tip">Ya tienes una clave guardada. Modelo: <span class="mono">${esc(MODELO)}</span>.</p>`:""}`;
+}
+async function guardarClave(){
+  const v=($("#gk").value||"").trim(); if(!v){ S.errAj="Pega la clave primero."; render(); return; }
+  const b=$("#guardarGk"); b.disabled=true; b.textContent="Comprobando…";
+  const prev=GKEY; GKEY=v;
+  try{ MODELO=await elegirModelo(); await rpc("ventas_guardar_ajustes",{k:LLAVE,gk:v,mo:MODELO}); S.errAj=""; S.vista="inicio"; render(); }
+  catch(err){ GKEY=prev; S.errAj = err.code==="clave" ? "Google dice que esa clave no es válida. Cópiala otra vez." : msgErr(err); render(); }
+}
+function vEvaluando(){ return `<h2>Evaluando tu llamada</h2><p class="dots">Leyendo tu progreso y puntuando</p><p class="tip">Tarda unos 30 segundos. No cierres la página.</p>`; }
+
+function vDetalle(){
+  const s = S.sesiones.find(x=>x.id===S.detalle); if (!s) return "<p>No encuentro esa llamada.</p>";
+  const c = /^s/i.test(s.contrato) ? "si" : /^n/i.test(s.contrato) ? "no" : "";
+  let h = `<button class="b3" id="volver">← Inicio</button><h2>Escenario ${esc(s.escenario)} · ${esc(s.titulo)}</h2>`;
+  h += `<p><span class="mono">${esc(s.fecha)}</span> <span class="tag ${c}">¿Contrató? ${esc(s.contrato)}</span><br>${esc(s.contratoFrase)}</p>`;
+  h += `<div class="punt">${CRIT.map(([k,n])=>`<div><span class="lbl">${n}</span><b class="mono">${esc(s.puntos&&s.puntos[k]||"–")}/5</b></div>`).join("")}</div>`;
+  if (s.foco) h += `<div class="card foco"><div class="lbl">Foco para la próxima</div><p><b>${esc(s.foco)}</b></p></div>`;
+  if (s.siguiente && s.siguiente.numero) h += `<p><b>Siguiente escenario: ${esc(s.siguiente.numero)}.</b> ${esc(s.siguiente.motivo||"")}</p>`;
+  h += `<div class="card">${md(s.feedback)}</div>`;
+  h += `<details class="card"><summary><b>Transcripción</b></summary><div style="white-space:pre-wrap;margin-top:8px">${esc(s.transcripcion)}</div></details>`;
+  const e = S.escenarios.find(x=>x.id===s.escId);
+  if (e) h += `<div class="row"><button class="b1" data-esc="${esc(e.id)}">Repetir este escenario</button></div>`;
+  return h;
+}
+
+function render(){
+  const app = $("#app"), bar = $("#bar");
+  if (!LLAVE || S.llaveMala){ app.innerHTML = `<h2>Abre tu enlace personal</h2><p>Esta app solo funciona con tu enlace privado (el que te pasó Claude). Ábrelo una vez en cada dispositivo y se queda guardado.</p>${S.error?`<p class="err">${esc(S.error)}</p>`:""}`; bar.hidden=true; return; }
+  app.innerHTML = S.vista==="llamada" ? vLlamada() : S.vista==="evaluando" ? vEvaluando() : S.vista==="detalle" ? vDetalle() : S.vista==="ajustes" ? vAjustes() : vInicio();
+  if (S.vista==="llamada"){
+    const ll = S.llamada;
+    bar.hidden = false;
+    if (!$("#mic") || bar.dataset.call !== String(ll.inicio)){
+      bar.dataset.call = String(ll.inicio);
+      bar.innerHTML = `<div class="in" style="flex-direction:column;align-items:stretch;gap:8px">
+        <div class="live" id="live"></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button id="mic" class="mic" aria-label="Hablar"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><path d="M12 18v4"/></svg></button>
+          <div style="flex:1"><div id="micLbl" class="micLbl"></div></div>
+          <button class="bx" id="colg">Colgar y evaluar</button>
+        </div>
+        <details class="tip"><summary>Escribir en vez de hablar</summary><div style="display:flex;gap:8px;margin-top:6px"><textarea id="in" rows="1"></textarea><button class="b2" id="env">Enviar</button></div></details></div>`;
+      $("#mic").onclick = () => { if (hablando){ try{speechSynthesis.cancel()}catch(e){} hablando=false; escuchar(true); } else if (escuchando) cerrarTurno(); else escuchar(true); };
+      $("#colg").onclick = colgar; $("#env").onclick = enviarEscrito;
+      $("#in").onkeydown = ev => { if (ev.key==="Enter" && !ev.shiftKey && !ev.isComposing){ ev.preventDefault(); enviarEscrito(); } };
+    }
+    pintarMic();
+    window.scrollTo(0, document.body.scrollHeight);
+  } else { bar.hidden = true; bar.innerHTML = ""; }
+  app.querySelectorAll("[data-esc]").forEach(b=>b.onclick=()=>empezar(b.dataset.esc));
+  app.querySelectorAll("[data-ses]").forEach(b=>b.onclick=()=>{ S.detalle=b.dataset.ses; S.vista="detalle"; render(); window.scrollTo(0,0); });
+  app.querySelectorAll("[data-rep]").forEach(b=>b.onclick=()=>hablar(S.llamada.turnos[+b.dataset.rep].t));
+  app.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ S.tab=b.dataset.tab; render(); });
+  app.querySelectorAll(".hit").forEach(c=>{ c.onpointerenter=c.onclick=()=>tooltip(+c.dataset.i); c.onpointerleave=()=>{ const t=$("#tt"); if(t) t.hidden=true; }; });
+  const v=$("#volver"); if (v) v.onclick=()=>{ S.vista="inicio"; render(); window.scrollTo(0,0); };
+  const vz=$("#voz"); if (vz) vz.onchange=()=>ls.set("voz",vz.value);
+  const pr=$("#probar"); if (pr) pr.onclick=()=>{ ls.set("mudo","0"); hablar("Hola, buenas tardes. Solo quería saber cuánto cobráis."); render(); };
+  const mu=$("#mudo"); if (mu) mu.onchange=()=>ls.set("mudo",mu.checked?"1":"0");
+  const ma=$("#manos"); if (ma) ma.onchange=()=>ls.set("manos",ma.checked?"1":"0");
+  const ia=$("#irAj"); if (ia) ia.onclick=()=>{ S.vista="ajustes"; render(); window.scrollTo(0,0); };
+  const gg=$("#guardarGk"); if (gg) gg.onclick=guardarClave;
+}
+
+(async () => {
+  const m = location.hash.match(/^#k=([A-Za-z0-9_-]+)/);
+  if (m){ LLAVE=m[1]; ls.set("llave",LLAVE); try{ history.replaceState(null,"",location.pathname); }catch(e){} }
+  else LLAVE = ls.get("llave");
+  if (LLAVE){ await cargar(); if (!S.llaveMala && !GKEY) S.vista="ajustes"; }
+  render();
+})();
+</script>
+</body>
+</html>
