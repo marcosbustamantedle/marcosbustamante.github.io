@@ -198,8 +198,8 @@ function hablar(t){
     speechSynthesis.cancel(); grab=false; trozos=[];
     hablando=true; antesDeHablar=null; pintarMic();
     const v = vozElegida();
-    const trozos = limpiarHabla(t).match(/[^.!?¿¡]+[.!?]*|[¿¡][^?!]+[?!]/g) || [limpiarHabla(t)];
-    const lista = trozos.map(x=>x.trim()).filter(Boolean);
+    const frases = limpiarHabla(t).match(/[^.!?¿¡]+[.!?]*|[¿¡][^?!]+[?!]/g) || [limpiarHabla(t)];
+    const lista = frases.map(x=>x.trim()).filter(Boolean);
     lista.forEach((x,i)=>{
       const u = new SpeechSynthesisUtterance(x);
       if (i===lista.length-1){ u.onend = finHabla; u.onerror = finHabla; }
@@ -210,7 +210,7 @@ function hablar(t){
     if (!lista.length) finHabla();
     setTimeout(()=>{ if (hablando && !speechSynthesis.speaking) finHabla(); }, 1500 + t.length*90);
     setTimeout(()=>{ if (hablando) finHabla(); }, 3000 + t.length*120); // el iPhone a veces no avisa de que ha terminado de hablar
-  } catch(e){ hablando=false; }
+  } catch(e){ hablando=false; console.error("hablar", e); }
 }
 const manos = () => ls.get("manos")!=="0";
 // ---------- Micro ----------
@@ -222,7 +222,7 @@ function pintarMic(){
   const ll=S.llamada; let est="listo";
   if(!ll||ll.colgo) est="fin"; else if(ll.pensando) est="pensando"; else if(hablando) est="hablando"; else if(micActivo && ac && ac.state!=="running") est="pausa"; else if(micActivo) est=grab?"escuchando":"atento";
   b.dataset.est=est==="atento"?"escuchando":est; b.disabled = est==="fin"||est==="pensando";
-  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est] + " · v8";
+  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est] + " · v9";
   if(live) live.textContent = est==="escuchando" ? "● grabando" : "";
 }
 function arrancarMic(){
