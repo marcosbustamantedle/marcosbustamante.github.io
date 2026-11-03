@@ -120,8 +120,8 @@ async function elegirModelo(){
     ok.sort((a,b)=>ver(b)-ver(a)); return ok[0]||"gemini-2.5-flash";
   }catch(e){ if(e.code==="clave") throw e; return "gemini-2.5-flash"; }
 }
-async function gemini(prompt,{json=false,rapido=false,audio=null}={}){
-  const cfg={}; if(json) cfg.responseMimeType="application/json";
+async function gemini(prompt,{json=false,rapido=false,audio=null,schema=null}={}){
+  const cfg={}; if(json) cfg.responseMimeType="application/json"; if(schema) cfg.responseSchema=schema;
   if(rapido && /2\.5-flash/.test(MODELO)) cfg.thinkingConfig={thinkingBudget:0};
   const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:generateContent`,{method:"POST",headers:{"x-goog-api-key":GKEY,"Content-Type":"application/json"},body:JSON.stringify({contents:[{role:"user",parts:audio?[{text:prompt},{inlineData:{mimeType:"audio/wav",data:audio}}]:[{text:prompt}]}],generationConfig:cfg})});
   if(!r.ok){ const e=new Error("gemini "+r.status); e.code=r.status===429?"limite":(r.status===400||r.status===403)?"clave":r.status===404?"modelo":"red"; throw e; }
@@ -216,13 +216,13 @@ const manos = () => ls.get("manos")!=="0";
 // ---------- Micro ----------
 // Graba tu voz directamente (sin el dictado del iPhone) y la manda a Gemini, que la entiende y contesta como el cliente.
 // El micro se abre con un toque al empezar y se queda abierto. Mientras habla o piensa el cliente no se graba nada.
-let ac=null, stream=null, fuente=null, proc=null, micActivo=false, grab=false, trozos=[], pre=[], silMs=0, vozMs=0, totMs=0, ruido=0.008, forzado=false;
+let tramas=0, picoRms=0, tDiag=null, ac=null, stream=null, fuente=null, proc=null, micActivo=false, grab=false, trozos=[], pre=[], silMs=0, vozMs=0, totMs=0, ruido=0.008, forzado=false;
 function pintarMic(){
   const b=$("#mic"), l=$("#micLbl"), live=$("#live"); if(!b) return;
   const ll=S.llamada; let est="listo";
   if(!ll||ll.colgo) est="fin"; else if(ll.pensando) est="pensando"; else if(hablando) est="hablando"; else if(micActivo && ac && ac.state!=="running") est="pausa"; else if(micActivo) est=grab?"escuchando":"atento";
   b.dataset.est=est==="atento"?"escuchando":est; b.disabled = est==="fin"||est==="pensando";
-  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est] + " · v7";
+  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est] + " · v8";
   if(live) live.textContent = est==="escuchando" ? "● grabando" : "";
 }
 function arrancarMic(){
@@ -234,7 +234,12 @@ function arrancarMic(){
   micActivo=true; pintarMic();
   navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(st=>{
     if(!micActivo||!S.llamada||S.llamada.colgo){ st.getTracks().forEach(t=>t.stop()); return; }
-    stream=st; fuente=ac.createMediaStreamSource(st); proc=ac.createScriptProcessor(4096,1,1);
+    // Safari: el audio del micro llega mejor a un AudioContext creado DESPUÉS de abrir el micro.
+    try{ const viejo=ac; ac=new AC(); ac.onstatechange=pintarMic; if(viejo) viejo.close(); }catch(e){}
+    stream=st; fuente=ac.createMediaStreamSource(st); proc=ac.createScriptProcessor(4096,1,1); tramas=0; picoRms=0;
+    clearTimeout(tDiag); tDiag=setTimeout(()=>{ if(!micActivo||!S.llamada||S.llamada.colgo) return;
+      if(ac.state!=="running"){ pintarMic(); return; }
+      if(tramas===0||picoRms<0.0005){ S.llamada.error="El micro está abierto pero no me llega sonido ("+(tramas===0?"sin datos":"silencio")+", "+ac.sampleRate+" Hz). Toca el micro para reintentar, o escribe abajo."; pararMic(); render(); } }, 6000);
     proc.onaudioprocess=e=>{ e.outputBuffer.getChannelData(0).fill(0); procesar(new Float32Array(e.inputBuffer.getChannelData(0))); };
     fuente.connect(proc); proc.connect(ac.destination);
     st.getTracks().forEach(t=>t.onended=()=>{ pararMic(); pintarMic(); });
@@ -247,7 +252,7 @@ function pararMic(){ micActivo=false; grab=false; trozos=[]; pre=[];
 function ocupado(){ const ll=S.llamada; return !ll||ll.colgo||ll.pensando||hablando; }
 function procesar(b){
   const ms=b.length/ac.sampleRate*1000; let q=0; for(let i=0;i<b.length;i++) q+=b[i]*b[i]; const rms=Math.sqrt(q/b.length);
-  const nv=document.getElementById("nivel"); if(nv) nv.style.width=Math.min(100,Math.round(rms/0.08*100))+"%";
+  tramas++; if(rms>picoRms) picoRms=rms; const nv=document.getElementById("nivel"); if(nv) nv.style.width=Math.min(100,Math.round(rms/0.08*100))+"%";
   if(ocupado()){ if(grab){ grab=false; trozos=[]; pintarMic(); } pre=[]; return; }
   const umbral=Math.max(0.012, ruido*3);
   if(!grab){
@@ -391,9 +396,9 @@ async function enviarTurno(txt, audio){
     let t;
     if (audio){
       const ll2 = {...ll, turnos: ll.turnos.slice(0,-1)};
-      const r = await gemini(promptCliente(ll2)+PIDE_AUDIO, {json:true, rapido:true, audio});
-      const o = sacarJSON(r.text||""); const dijo = String(o.dijo||"").trim();
-      if (!dijo){ ll.turnos.pop(); ll.pensando=false; render(); return; }
+      const r = await gemini(promptCliente(ll2)+PIDE_AUDIO, {json:true, rapido:true, audio, schema:{type:"OBJECT",properties:{dijo:{type:"STRING"},cliente:{type:"STRING"}},required:["dijo","cliente"]}});
+      const o = sacarJSON(r.text||""); const dijo = String(o.dijo||o.marcos||o.transcripcion||"").trim();
+      if (!dijo){ ll.turnos.pop(); ll.pensando=false; ll.error="No te he entendido bien. Repítelo un poco más alto o más cerca del micro."; render(); return; }
       ll.turnos[ll.turnos.length-1].t = dijo; t = String(o.cliente||"");
     } else {
       const r = await gemini(promptCliente(ll), {rapido:true}); t = r.text||"";
