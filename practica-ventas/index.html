@@ -190,7 +190,7 @@ function vozElegida(){ let n=""; try{ n=localStorage.getItem("voz")||""; }catch(
   return orden[0]||null; }
 function limpiarHabla(t){ return t.replace(/\[CUELGA\]/g,"").replace(/\beh+…+/gi,"eh,").replace(/…/g,", ").replace(/\s*\([^)]*\)\s*/g," ").replace(/\s+/g," ").trim(); }
 let hablando=false, antesDeHablar=null, tAuto=null;
-function finHabla(){ if(!hablando) return; antesDeHablar=null; setTimeout(()=>{ hablando=false; consumir(); if (S.llamada && !S.llamada.colgo && !S.llamada.pensando && manos() && !rec) arrancarMic(false); pintarMic(); }, 400); }
+function finHabla(){ if(!hablando) return; antesDeHablar=null; setTimeout(()=>{ hablando=false; consumir(); if (S.llamada && !S.llamada.colgo && !S.llamada.pensando && manos() && !rec && !micBloq) arrancarMic(false); pintarMic(); }, 400); }
 function hablar(t){
   try {
     if (!window.speechSynthesis || ls.get("mudo")==="1"){ hablando=true; finHabla(); return; }
@@ -215,7 +215,7 @@ const manos = () => ls.get("manos")!=="0";
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 // Un solo reconocimiento por llamada: el iPhone solo deja abrir el micro con un toque,
 // así que se abre al empezar y se queda abierto. Mientras habla o piensa el cliente, lo que oye se descarta.
-let rec=null, micActivo=false, consumido={}, ultimos=[], tSil=null, segmento="";
+let rec=null, micBloq=false, micActivo=false, consumido={}, ultimos=[], tSil=null, segmento="";
 function textoNuevo(){ return ultimos.map((t,i)=>t.slice(consumido[i]||0)).join(" ").replace(/\s+/g," ").trim(); }
 function consumir(){ ultimos.forEach((t,i)=>consumido[i]=t.length); segmento=""; }
 function pintarMic(){
@@ -238,11 +238,11 @@ function arrancarMic(gesto){
     segmento=textoNuevo(); pintarMic();
     if(segmento) tSil=setTimeout(enviarSegmento, 1600); };
   r.onerror=ev=>{ if(rec!==r) return;
-    if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){ if(gesto && S.llamada){ S.llamada.error="No puedo usar el micrófono. En el iPhone: Ajustes › General › Teclado › Activar dictado, y en Ajustes › Safari › Micrófono › Permitir. O escribe abajo."; render(); } } };
+    if(ev.error==="not-allowed"||ev.error==="service-not-allowed"||ev.error==="audio-capture"){ micBloq=true; if(S.llamada){ S.llamada.error="El iPhone no me deja usar el micro (código: "+ev.error+"). Ábrelo en Safari, no desde un icono de la pantalla de inicio ni desde otra app, y revisa Ajustes › Safari › Micrófono › Permitir y Ajustes › General › Teclado › Activar dictado. Después toca el micro. O escribe abajo."; render(); } } };
   r.onend=()=>{ if(rec!==r) return; const pend=textoNuevo(); rec=null; micActivo=false; clearTimeout(tSil); ultimos=[]; consumido={}; segmento="";
     const ll=S.llamada;
     if(pend && ll && !ll.pensando && !ll.colgo && !hablando) enviarTexto(pend);
-    else { if(ll && !ll.colgo && manos()) setTimeout(()=>{ if(!rec) arrancarMic(false); }, 300); pintarMic(); } };
+    else { if(ll && !ll.colgo && manos() && !micBloq) setTimeout(()=>{ if(!rec) arrancarMic(false); }, 300); pintarMic(); } };
   try{ r.start(); }catch(e){ rec=null; micActivo=false; }
   pintarMic();
 }
@@ -563,7 +563,7 @@ function render(){
           <button class="bx" id="colg">Colgar y evaluar</button>
         </div>
         <details class="tip"><summary>Escribir en vez de hablar</summary><div style="display:flex;gap:8px;margin-top:6px"><textarea id="in" rows="1"></textarea><button class="b2" id="env">Enviar</button></div></details></div>`;
-      $("#mic").onclick = () => { if (hablando){ try{speechSynthesis.cancel()}catch(e){} hablando=false; consumir(); } if (!rec) arrancarMic(true); else if (textoNuevo()) enviarSegmento(); pintarMic(); };
+      $("#mic").onclick = () => { if (hablando){ try{speechSynthesis.cancel()}catch(e){} hablando=false; consumir(); } if (!rec){ micBloq=false; if(S.llamada) S.llamada.error=""; arrancarMic(true); } else if (textoNuevo()) enviarSegmento(); pintarMic(); };
       $("#colg").onclick = colgar; $("#env").onclick = enviarEscrito;
       $("#in").onkeydown = ev => { if (ev.key==="Enter" && !ev.shiftKey && !ev.isComposing){ ev.preventDefault(); enviarEscrito(); } };
     }
