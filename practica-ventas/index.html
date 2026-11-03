@@ -70,6 +70,7 @@ a{color:var(--lk)}
 @keyframes pulso{0%{box-shadow:0 0 0 0 rgba(214,69,69,.5)}70%{box-shadow:0 0 0 14px rgba(214,69,69,0)}100%{box-shadow:0 0 0 0 rgba(214,69,69,0)}}
 .micLbl{font:600 15px var(--e);text-transform:uppercase;letter-spacing:.06em}
 .live{min-height:22px;font-size:15px;color:var(--tx2);font-style:italic}
+.nivel{height:6px;border-radius:3px;background:var(--line,#ddd);overflow:hidden;margin:4px 0 6px}.nivel i{display:block;height:100%;width:0;background:var(--mb-azul);transition:width .08s}.ver{font:11px var(--m,monospace);color:var(--tx2);opacity:.7}
 .tabs{display:flex;gap:4px;background:var(--sup);border:1px solid var(--ln);border-radius:12px;padding:4px;margin:8px 0 16px}
 .tabs button{flex:1;background:transparent;color:var(--tx2)}.tabs button.on{background:var(--mb-negro);color:#fff}
 @media (prefers-color-scheme:dark){.tabs button.on{background:var(--mb-amarillo);color:var(--mb-negro)}}
@@ -208,6 +209,7 @@ function hablar(t){
     });
     if (!lista.length) finHabla();
     setTimeout(()=>{ if (hablando && !speechSynthesis.speaking) finHabla(); }, 1500 + t.length*90);
+    setTimeout(()=>{ if (hablando) finHabla(); }, 3000 + t.length*120); // el iPhone a veces no avisa de que ha terminado de hablar
   } catch(e){ hablando=false; }
 }
 const manos = () => ls.get("manos")!=="0";
@@ -220,7 +222,7 @@ function pintarMic(){
   const ll=S.llamada; let est="listo";
   if(!ll||ll.colgo) est="fin"; else if(ll.pensando) est="pensando"; else if(hablando) est="hablando"; else if(micActivo && ac && ac.state!=="running") est="pausa"; else if(micActivo) est=grab?"escuchando":"atento";
   b.dataset.est=est==="atento"?"escuchando":est; b.disabled = est==="fin"||est==="pensando";
-  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est];
+  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est] + " · v7";
   if(live) live.textContent = est==="escuchando" ? "● grabando" : "";
 }
 function arrancarMic(){
@@ -245,6 +247,7 @@ function pararMic(){ micActivo=false; grab=false; trozos=[]; pre=[];
 function ocupado(){ const ll=S.llamada; return !ll||ll.colgo||ll.pensando||hablando; }
 function procesar(b){
   const ms=b.length/ac.sampleRate*1000; let q=0; for(let i=0;i<b.length;i++) q+=b[i]*b[i]; const rms=Math.sqrt(q/b.length);
+  const nv=document.getElementById("nivel"); if(nv) nv.style.width=Math.min(100,Math.round(rms/0.08*100))+"%";
   if(ocupado()){ if(grab){ grab=false; trozos=[]; pintarMic(); } pre=[]; return; }
   const umbral=Math.max(0.012, ruido*3);
   if(!grab){
@@ -587,7 +590,7 @@ function render(){
     if (!$("#mic") || bar.dataset.call !== String(ll.inicio)){
       bar.dataset.call = String(ll.inicio);
       bar.innerHTML = `<div class="in" style="flex-direction:column;align-items:stretch;gap:8px">
-        <div class="live" id="live"></div>
+        <div class="nivel" title="Se mueve cuando el micro te oye"><i id="nivel"></i></div><div class="live" id="live"></div>
         <div style="display:flex;align-items:center;gap:12px">
           <button id="mic" class="mic" aria-label="Hablar"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><path d="M12 18v4"/></svg></button>
           <div style="flex:1"><div id="micLbl" class="micLbl"></div></div>
