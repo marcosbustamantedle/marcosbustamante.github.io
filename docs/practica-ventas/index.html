@@ -190,11 +190,11 @@ function vozElegida(){ let n=""; try{ n=localStorage.getItem("voz")||""; }catch(
   return orden[0]||null; }
 function limpiarHabla(t){ return t.replace(/\[CUELGA\]/g,"").replace(/\beh+…+/gi,"eh,").replace(/…/g,", ").replace(/\s*\([^)]*\)\s*/g," ").replace(/\s+/g," ").trim(); }
 let hablando=false, antesDeHablar=null, tAuto=null;
-function finHabla(){ if(!hablando) return; hablando=false; antesDeHablar=null; if (S.llamada && !S.llamada.colgo && !S.llamada.pensando && manos()) setTimeout(escuchar, 250); else pintarMic(); }
+function finHabla(){ if(!hablando) return; antesDeHablar=null; setTimeout(()=>{ hablando=false; consumir(); if (S.llamada && !S.llamada.colgo && !S.llamada.pensando && manos() && !rec) arrancarMic(false); pintarMic(); }, 400); }
 function hablar(t){
   try {
     if (!window.speechSynthesis || ls.get("mudo")==="1"){ hablando=true; finHabla(); return; }
-    speechSynthesis.cancel(); pararMic();
+    speechSynthesis.cancel(); consumir(); clearTimeout(tSil);
     hablando=true; antesDeHablar=null; pintarMic();
     const v = vozElegida();
     const trozos = limpiarHabla(t).match(/[^.!?¿¡]+[.!?]*|[¿¡][^?!]+[?!]/g) || [limpiarHabla(t)];
@@ -213,29 +213,42 @@ function hablar(t){
 const manos = () => ls.get("manos")!=="0";
 // ---------- Micro ----------
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec=null, escuchando=false, textoFinal="", textoParcial="", tSil=null, enviado=false;
+// Un solo reconocimiento por llamada: el iPhone solo deja abrir el micro con un toque,
+// así que se abre al empezar y se queda abierto. Mientras habla o piensa el cliente, lo que oye se descarta.
+let rec=null, micActivo=false, consumido={}, ultimos=[], tSil=null, segmento="";
+function textoNuevo(){ return ultimos.map((t,i)=>t.slice(consumido[i]||0)).join(" ").replace(/\s+/g," ").trim(); }
+function consumir(){ ultimos.forEach((t,i)=>consumido[i]=t.length); segmento=""; }
 function pintarMic(){
   const b=$("#mic"), l=$("#micLbl"), live=$("#live"); if(!b) return;
   const ll=S.llamada; let est="listo";
-  if(!ll||ll.colgo) est="fin"; else if(ll.pensando) est="pensando"; else if(hablando) est="hablando"; else if(escuchando) est="escuchando";
+  if(!ll||ll.colgo) est="fin"; else if(ll.pensando) est="pensando"; else if(hablando) est="hablando"; else if(micActivo) est="escuchando";
   b.dataset.est=est; b.disabled = est==="fin"||est==="pensando";
-  l.textContent = {listo:"Toca para hablar",escuchando:"Te escucho… cuando calles, se envía",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est];
-  if(live) live.textContent = (textoFinal+" "+textoParcial).trim();
+  l.textContent = {listo:"Toca el micro para hablar",escuchando:"Te escucho… cuando calles, se envía",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est];
+  if(live) live.textContent = est==="escuchando" ? segmento : "";
 }
-function escuchar(gesto){
-  if(!SR || !S.llamada || S.llamada.pensando || S.llamada.colgo) return;
-  if(hablando){ try{speechSynthesis.cancel()}catch(e){} hablando=false; }
-  if(escuchando) return;
-  textoFinal=""; textoParcial=""; enviado=false;
-  rec=new SR(); rec.lang="es-ES"; rec.interimResults=true; rec.continuous=true;
-  rec.onresult=ev=>{ let f="",p=""; for(let i=0;i<ev.results.length;i++){ const r=ev.results[i]; if(r.isFinal) f+=r[0].transcript+" "; else p+=r[0].transcript+" "; } textoFinal=f.trim(); textoParcial=p.trim(); pintarMic(); clearTimeout(tSil); tSil=setTimeout(cerrarTurno, 1600); };
-  rec.onerror=ev=>{ if((ev.error==="not-allowed"||ev.error==="service-not-allowed") && gesto){ S.llamada.error="No tengo permiso para usar el micrófono. Actívalo para esta página en los ajustes del navegador (o escribe abajo)."; escuchando=false; render(); } };
-  rec.onend=()=>{ escuchando=false; clearTimeout(tSil); const t=(textoFinal+" "+textoParcial).trim(); if(!enviado && t){ enviado=true; enviarTexto(t); } else pintarMic(); };
-  try{ rec.start(); escuchando=true; }catch(e){ escuchando=false; }
+function arrancarMic(gesto){
+  if(!SR || !S.llamada || S.llamada.colgo || rec) return;
+  const r=new SR(); rec=r; r.lang="es-ES"; r.interimResults=true; r.continuous=true;
+  ultimos=[]; consumido={}; segmento="";
+  r.onstart=()=>{ if(rec!==r) return; micActivo=true; pintarMic(); };
+  r.onresult=ev=>{ if(rec!==r) return; micActivo=true;
+    ultimos=[]; for(let i=0;i<ev.results.length;i++) ultimos.push(ev.results[i][0].transcript||"");
+    const ll=S.llamada; clearTimeout(tSil);
+    if(hablando || !ll || ll.pensando || ll.colgo){ consumir(); pintarMic(); return; }
+    segmento=textoNuevo(); pintarMic();
+    if(segmento) tSil=setTimeout(enviarSegmento, 1600); };
+  r.onerror=ev=>{ if(rec!==r) return;
+    if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){ if(gesto && S.llamada){ S.llamada.error="No puedo usar el micrófono. En el iPhone: Ajustes › General › Teclado › Activar dictado, y en Ajustes › Safari › Micrófono › Permitir. O escribe abajo."; render(); } } };
+  r.onend=()=>{ if(rec!==r) return; const pend=textoNuevo(); rec=null; micActivo=false; clearTimeout(tSil); ultimos=[]; consumido={}; segmento="";
+    const ll=S.llamada;
+    if(pend && ll && !ll.pensando && !ll.colgo && !hablando) enviarTexto(pend);
+    else { if(ll && !ll.colgo && manos()) setTimeout(()=>{ if(!rec) arrancarMic(false); }, 300); pintarMic(); } };
+  try{ r.start(); }catch(e){ rec=null; micActivo=false; }
   pintarMic();
 }
-function cerrarTurno(){ if(rec&&escuchando){ try{rec.stop()}catch(e){} } }
-function pararMic(){ if(rec){ enviado=true; try{rec.abort()}catch(e){} } escuchando=false; clearTimeout(tSil); }
+function enviarSegmento(){ clearTimeout(tSil); const t=textoNuevo(); if(!t||hablando||!S.llamada||S.llamada.pensando||S.llamada.colgo) return; consumir(); pintarMic(); enviarTexto(t); }
+function pararMic(){ const r=rec; rec=null; micActivo=false; clearTimeout(tSil); segmento=""; if(r){ try{r.abort()}catch(e){} } }
+function escuchar(){ if(!rec) arrancarMic(false); }
 
 // ---------- Prompts ----------
 const REGLAS_CLIENTE = `Eres un cliente simulado para que Marcos, fisioterapeuta y entrenador, practique ventas por TELÉFONO.
@@ -343,9 +356,9 @@ function empezar(id){
   if (!GKEY){ S.vista="ajustes"; render(); return; }
   const p = primera(e.ficha);
   S.llamada = { inicio:Date.now(), escId:e.id, numero:e.numero, titulo:e.titulo, ficha:e.ficha, turnos:[{q:"c",t:p}], pensando:false, colgo:false, error:"" };
-  S.vista = "llamada"; render(); window.scrollTo(0,0); hablar(p);
+  S.vista = "llamada"; render(); window.scrollTo(0,0); hablar(p); if (manos()) arrancarMic(true);
 }
-function enviarEscrito(){ const ta=$("#in"); if(!ta) return; const t=ta.value.trim(); if(!t) return; ta.value=""; pararMic(); enviarTexto(t); }
+function enviarEscrito(){ const ta=$("#in"); if(!ta) return; const t=ta.value.trim(); if(!t) return; ta.value=""; consumir(); clearTimeout(tSil); enviarTexto(t); }
 async function enviarTexto(txt){
   const ll = S.llamada; if (!ll || ll.pensando || ll.colgo || !txt) return;
   ll.turnos.push({q:"m",t:txt}); ll.pensando = true; ll.error = ""; render();
@@ -550,7 +563,7 @@ function render(){
           <button class="bx" id="colg">Colgar y evaluar</button>
         </div>
         <details class="tip"><summary>Escribir en vez de hablar</summary><div style="display:flex;gap:8px;margin-top:6px"><textarea id="in" rows="1"></textarea><button class="b2" id="env">Enviar</button></div></details></div>`;
-      $("#mic").onclick = () => { if (hablando){ try{speechSynthesis.cancel()}catch(e){} hablando=false; escuchar(true); } else if (escuchando) cerrarTurno(); else escuchar(true); };
+      $("#mic").onclick = () => { if (hablando){ try{speechSynthesis.cancel()}catch(e){} hablando=false; consumir(); } if (!rec) arrancarMic(true); else if (textoNuevo()) enviarSegmento(); pintarMic(); };
       $("#colg").onclick = colgar; $("#env").onclick = enviarEscrito;
       $("#in").onkeydown = ev => { if (ev.key==="Enter" && !ev.shiftKey && !ev.isComposing){ ev.preventDefault(); enviarEscrito(); } };
     }
