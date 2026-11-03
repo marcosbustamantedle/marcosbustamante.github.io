@@ -191,15 +191,15 @@ function vozElegida(){ let n=""; try{ n=localStorage.getItem("voz")||""; }catch(
   return orden[0]||null; }
 function limpiarHabla(t){ return t.replace(/\[CUELGA\]/g,"").replace(/\beh+…+/gi,"eh,").replace(/…/g,", ").replace(/\s*\([^)]*\)\s*/g," ").replace(/\s+/g," ").trim(); }
 let hablando=false, antesDeHablar=null, tAuto=null;
-function finHabla(){ if(!hablando) return; antesDeHablar=null; setTimeout(()=>{ hablando=false; pre=[]; pintarMic(); }, 500); }
+function finHabla(){ if(!hablando) return; antesDeHablar=null; setTimeout(()=>{ hablando=false; pre=[]; revisarMic(); pintarMic(); }, 500); }
 function hablar(t){
   try {
     if (!window.speechSynthesis || ls.get("mudo")==="1"){ hablando=true; finHabla(); return; }
     speechSynthesis.cancel(); grab=false; trozos=[];
     hablando=true; antesDeHablar=null; pintarMic();
     const v = vozElegida();
-    const trozos = limpiarHabla(t).match(/[^.!?¿¡]+[.!?]*|[¿¡][^?!]+[?!]/g) || [limpiarHabla(t)];
-    const lista = trozos.map(x=>x.trim()).filter(Boolean);
+    const frases = limpiarHabla(t).match(/[^.!?¿¡]+[.!?]*|[¿¡][^?!]+[?!]/g) || [limpiarHabla(t)];
+    const lista = frases.map(x=>x.trim()).filter(Boolean);
     lista.forEach((x,i)=>{
       const u = new SpeechSynthesisUtterance(x);
       if (i===lista.length-1){ u.onend = finHabla; u.onerror = finHabla; }
@@ -209,20 +209,20 @@ function hablar(t){
     });
     if (!lista.length) finHabla();
     setTimeout(()=>{ if (hablando && !speechSynthesis.speaking) finHabla(); }, 1500 + t.length*90);
-    setTimeout(()=>{ if (hablando) finHabla(); }, 3000 + t.length*120); // el iPhone a veces no avisa de que ha terminado de hablar
-  } catch(e){ hablando=false; }
+    clearTimeout(tAuto); tAuto=setTimeout(()=>{ if (hablando) finHabla(); }, 3000 + t.length*120); // el iPhone a veces no avisa de que ha terminado de hablar
+  } catch(e){ hablando=false; console.error("hablar", e); }
 }
 const manos = () => ls.get("manos")!=="0";
 // ---------- Micro ----------
 // Graba tu voz directamente (sin el dictado del iPhone) y la manda a Gemini, que la entiende y contesta como el cliente.
 // El micro se abre con un toque al empezar y se queda abierto. Mientras habla o piensa el cliente no se graba nada.
-let tramas=0, picoRms=0, tDiag=null, ac=null, stream=null, fuente=null, proc=null, micActivo=false, grab=false, trozos=[], pre=[], silMs=0, vozMs=0, totMs=0, ruido=0.008, forzado=false;
+let tramas=0, picoRms=0, tDiag=null, ac=null, stream=null, fuente=null, proc=null, micActivo=false, grab=false, trozos=[], pre=[], silMs=0, vozMs=0, totMs=0, ruido=0.002, forzado=false;
 function pintarMic(){
   const b=$("#mic"), l=$("#micLbl"), live=$("#live"); if(!b) return;
   const ll=S.llamada; let est="listo";
   if(!ll||ll.colgo) est="fin"; else if(ll.pensando) est="pensando"; else if(hablando) est="hablando"; else if(micActivo && ac && ac.state!=="running") est="pausa"; else if(micActivo) est=grab?"escuchando":"atento";
   b.dataset.est=est==="atento"?"escuchando":est; b.disabled = est==="fin"||est==="pensando";
-  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est] + " · v8";
+  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()&&!forzado?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est] + " · v10";
   if(live) live.textContent = est==="escuchando" ? "● grabando" : "";
 }
 function arrancarMic(){
@@ -239,24 +239,27 @@ function arrancarMic(){
     stream=st; fuente=ac.createMediaStreamSource(st); proc=ac.createScriptProcessor(4096,1,1); tramas=0; picoRms=0;
     clearTimeout(tDiag); tDiag=setTimeout(()=>{ if(!micActivo||!S.llamada||S.llamada.colgo) return;
       if(ac.state!=="running"){ pintarMic(); return; }
-      if(tramas===0||picoRms<0.0005){ S.llamada.error="El micro está abierto pero no me llega sonido ("+(tramas===0?"sin datos":"silencio")+", "+ac.sampleRate+" Hz). Toca el micro para reintentar, o escribe abajo."; pararMic(); render(); } }, 6000);
+      if(tramas===0||picoRms<0.00001){ S.llamada.error="El micro está abierto pero no me llega sonido ("+(tramas===0?"sin datos":"silencio")+", "+ac.sampleRate+" Hz). Toca el micro para reintentar, o escribe abajo."; pararMic(); render(); } }, 6000);
     proc.onaudioprocess=e=>{ e.outputBuffer.getChannelData(0).fill(0); procesar(new Float32Array(e.inputBuffer.getChannelData(0))); };
     fuente.connect(proc); proc.connect(ac.destination);
     st.getTracks().forEach(t=>t.onended=()=>{ pararMic(); pintarMic(); });
     if(ac.state!=="running") ac.resume();
   }).catch(err=>{ micActivo=false; if(S.llamada){ S.llamada.error="No me deja usar el micro ("+(err.name||"error")+"). En Safari toca «aA» › Ajustes del sitio web › Micrófono › Permitir, y vuelve a tocar el micro. O escribe abajo."; render(); } });
 }
-function pararMic(){ micActivo=false; grab=false; trozos=[]; pre=[];
+function pararMic(){ clearTimeout(tDiag); micActivo=false; grab=false; trozos=[]; pre=[];
   try{ if(proc){ proc.onaudioprocess=null; proc.disconnect(); } if(fuente) fuente.disconnect(); }catch(e){}
   if(stream) stream.getTracks().forEach(t=>{ t.onended=null; t.stop(); }); stream=null; proc=null; fuente=null; }
+const UMBRAL_MIN=0.004; // Safari sin filtros da la voz sobre 0,01; el silencio, por debajo de 0,001
+// La voz del navegador puede dejar el micro silenciado (WebKit 218815): si pasa, se abre uno nuevo
+function revisarMic(){ const p=stream&&stream.getAudioTracks()[0]; if(micActivo&&p&&(p.muted||p.readyState!=="live"||ac.state!=="running")){ pararMic(); arrancarMic(); } }
 function ocupado(){ const ll=S.llamada; return !ll||ll.colgo||ll.pensando||hablando; }
 function procesar(b){
   const ms=b.length/ac.sampleRate*1000; let q=0; for(let i=0;i<b.length;i++) q+=b[i]*b[i]; const rms=Math.sqrt(q/b.length);
   tramas++; if(rms>picoRms) picoRms=rms; const nv=document.getElementById("nivel"); if(nv) nv.style.width=Math.min(100,Math.round(rms/0.08*100))+"%";
   if(ocupado()){ if(grab){ grab=false; trozos=[]; pintarMic(); } pre=[]; return; }
-  const umbral=Math.max(0.012, ruido*3);
+  const umbral=Math.max(UMBRAL_MIN, ruido*3);
+  ruido+=(rms-ruido)*Math.min(1,ms*(rms<ruido?0.001:0.00002)); // el ruido baja rápido y sube muy despacio: una voz bajita no lo dispara
   if(!grab){
-    if(rms<umbral) ruido=ruido*0.97+rms*0.03;
     pre.push(b); if(pre.length>4) pre.shift();
     if(manos() && rms>umbral){ grab=true; forzado=false; trozos=pre.slice(); pre=[]; silMs=0; vozMs=ms; totMs=0; pintarMic(); }
     return; }
@@ -264,7 +267,7 @@ function procesar(b){
   if((!forzado && silMs>1300) || totMs>40000) cerrarSegmento();
 }
 function empezarGrabar(){ if(!micActivo||ocupado()) return; grab=true; forzado=true; trozos=pre.slice(); pre=[]; silMs=0; vozMs=400; totMs=0; pintarMic(); }
-function cerrarSegmento(){ const t=trozos; grab=false; trozos=[]; pintarMic(); if(vozMs<300||!t.length||ocupado()) return; enviarTurno(null, wavB64(t, ac.sampleRate)); }
+function cerrarSegmento(){ const t=trozos; grab=false; trozos=[]; pintarMic(); if(vozMs<150||!t.length||ocupado()) return; enviarTurno(null, wavB64(t, ac.sampleRate)); }
 function wavB64(ch, sr){
   const n=ch.reduce((a,c)=>a+c.length,0), r=sr/16000, m=Math.floor(n/r), pcm=new Int16Array(m);
   const todo=new Float32Array(n); let o=0; ch.forEach(c=>{ todo.set(c,o); o+=c.length; });
@@ -602,7 +605,7 @@ function render(){
           <button class="bx" id="colg">Colgar y evaluar</button>
         </div>
         <details class="tip"><summary>Escribir en vez de hablar</summary><div style="display:flex;gap:8px;margin-top:6px"><textarea id="in" rows="1"></textarea><button class="b2" id="env">Enviar</button></div></details></div>`;
-      $("#mic").onclick = () => { try{ if(ac && ac.state!=="running") ac.resume(); }catch(e){} if (hablando){ try{speechSynthesis.cancel()}catch(e){} hablando=false; pre=[]; } if (!micActivo){ if(S.llamada) S.llamada.error=""; arrancarMic(); } else if (grab) cerrarSegmento(); else empezarGrabar(); pintarMic(); };
+      $("#mic").onclick = () => { if(micActivo && stream && !hablando && ac && ac.state!=="running"){ pararMic(); arrancarMic(); pintarMic(); return; } try{ if(ac && ac.state!=="running") ac.resume(); }catch(e){} if (hablando){ try{speechSynthesis.cancel()}catch(e){} hablando=false; pre=[]; } if (!micActivo){ if(S.llamada) S.llamada.error=""; arrancarMic(); } else if (grab) cerrarSegmento(); else empezarGrabar(); pintarMic(); };
       $("#colg").onclick = colgar; $("#env").onclick = enviarEscrito;
       $("#in").onkeydown = ev => { if (ev.key==="Enter" && !ev.shiftKey && !ev.isComposing){ ev.preventDefault(); enviarEscrito(); } };
     }
