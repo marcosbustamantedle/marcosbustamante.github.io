@@ -190,8 +190,8 @@ function vozElegida(){ let n=""; try{ n=localStorage.getItem("voz")||""; }catch(
     return (puntuarVoz(b)+gb)-(puntuarVoz(a)+ga); });
   return orden[0]||null; }
 function limpiarHabla(t){ return t.replace(/\[CUELGA\]/g,"").replace(/\beh+…+/gi,"eh,").replace(/…/g,", ").replace(/\s*\([^)]*\)\s*/g," ").replace(/\s+/g," ").trim(); }
-let hablando=false, antesDeHablar=null, tAuto=null;
-function finHabla(){ if(!hablando) return; antesDeHablar=null; setTimeout(()=>{ hablando=false; pre=[]; revisarMic(); pintarMic(); }, 500); }
+let hablando=false, antesDeHablar=null, tAuto=null, silencioHasta=0, hablaHasta=0;
+function finHabla(){ if(!hablando) return; antesDeHablar=null; setTimeout(()=>{ hablando=false; pre=[]; silencioHasta=Date.now()+700; revisarMic(); pintarMic(); }, 500); }
 function hablar(t){
   try {
     if (!window.speechSynthesis || ls.get("mudo")==="1"){ hablando=true; finHabla(); return; }
@@ -209,7 +209,7 @@ function hablar(t){
     });
     if (!lista.length) finHabla();
     setTimeout(()=>{ if (hablando && !speechSynthesis.speaking) finHabla(); }, 1500 + t.length*90);
-    clearTimeout(tAuto); tAuto=setTimeout(()=>{ if (hablando) finHabla(); }, 3000 + t.length*120); // el iPhone a veces no avisa de que ha terminado de hablar
+    hablaHasta=Date.now()+3500+t.length*120; clearTimeout(tAuto); tAuto=setTimeout(()=>{ if (hablando) finHabla(); }, 3000 + t.length*120); // el iPhone a veces no avisa de que ha terminado de hablar
   } catch(e){ hablando=false; console.error("hablar", e); }
 }
 const manos = () => ls.get("manos")!=="0";
@@ -222,7 +222,7 @@ function pintarMic(){
   const ll=S.llamada; let est="listo";
   if(!ll||ll.colgo) est="fin"; else if(ll.pensando) est="pensando"; else if(hablando) est="hablando"; else if(micActivo && ac && ac.state!=="running") est="pausa"; else if(micActivo) est=grab?"escuchando":"atento";
   b.dataset.est=est==="atento"?"escuchando":est; b.disabled = est==="fin"||est==="pensando";
-  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()&&!forzado?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est] + " · v10";
+  l.textContent = {listo:"Toca el micro para hablar",pausa:"Toca el micro para seguir",atento:manos()?"Habla cuando quieras":"Toca el micro y habla",escuchando:manos()&&!forzado?"Te escucho… cuando calles, se envía":"Te escucho… toca otra vez para enviar",pensando:"El cliente está pensando…",hablando:"El cliente está hablando (toca para cortarle)",fin:"Llamada terminada"}[est] + " · v11";
   if(live) live.textContent = est==="escuchando" ? "● grabando" : "";
 }
 function arrancarMic(){
@@ -249,15 +249,16 @@ function arrancarMic(){
 function pararMic(){ clearTimeout(tDiag); micActivo=false; grab=false; trozos=[]; pre=[];
   try{ if(proc){ proc.onaudioprocess=null; proc.disconnect(); } if(fuente) fuente.disconnect(); }catch(e){}
   if(stream) stream.getTracks().forEach(t=>{ t.onended=null; t.stop(); }); stream=null; proc=null; fuente=null; }
-const UMBRAL_MIN=0.004; // Safari sin filtros da la voz sobre 0,01; el silencio, por debajo de 0,001
+const UMBRAL_MIN=0.006; // Safari sin filtros da la voz sobre 0,01; el silencio, por debajo de 0,001
 // La voz del navegador puede dejar el micro silenciado (WebKit 218815): si pasa, se abre uno nuevo
 function revisarMic(){ const p=stream&&stream.getAudioTracks()[0]; if(micActivo&&p&&(p.muted||p.readyState!=="live"||ac.state!=="running")){ pararMic(); arrancarMic(); } }
-function ocupado(){ const ll=S.llamada; return !ll||ll.colgo||ll.pensando||hablando; }
+// Mientras suena la voz del cliente (aunque el aviso de fin haya llegado antes) no se graba: así no se cuela su eco
+function ocupado(){ const ll=S.llamada; return !ll||ll.colgo||ll.pensando||hablando||Date.now()<silencioHasta||(Date.now()<hablaHasta&&!!(window.speechSynthesis&&speechSynthesis.speaking)); }
 function procesar(b){
   const ms=b.length/ac.sampleRate*1000; let q=0; for(let i=0;i<b.length;i++) q+=b[i]*b[i]; const rms=Math.sqrt(q/b.length);
   tramas++; if(rms>picoRms) picoRms=rms; const nv=document.getElementById("nivel"); if(nv) nv.style.width=Math.min(100,Math.round(rms/0.08*100))+"%";
   if(ocupado()){ if(grab){ grab=false; trozos=[]; pintarMic(); } pre=[]; return; }
-  const umbral=Math.max(UMBRAL_MIN, ruido*3);
+  const umbral=Math.max(UMBRAL_MIN, ruido*4);
   ruido+=(rms-ruido)*Math.min(1,ms*(rms<ruido?0.001:0.00002)); // el ruido baja rápido y sube muy despacio: una voz bajita no lo dispara
   if(!grab){
     pre.push(b); if(pre.length>4) pre.shift();
@@ -267,7 +268,7 @@ function procesar(b){
   if((!forzado && silMs>1300) || totMs>40000) cerrarSegmento();
 }
 function empezarGrabar(){ if(!micActivo||ocupado()) return; grab=true; forzado=true; trozos=pre.slice(); pre=[]; silMs=0; vozMs=400; totMs=0; pintarMic(); }
-function cerrarSegmento(){ const t=trozos; grab=false; trozos=[]; pintarMic(); if(vozMs<150||!t.length||ocupado()) return; enviarTurno(null, wavB64(t, ac.sampleRate)); }
+function cerrarSegmento(){ const t=trozos; grab=false; trozos=[]; pintarMic(); if(vozMs<250||!t.length||ocupado()) return; enviarTurno(null, wavB64(t, ac.sampleRate)); }
 function wavB64(ch, sr){
   const n=ch.reduce((a,c)=>a+c.length,0), r=sr/16000, m=Math.floor(n/r), pcm=new Int16Array(m);
   const todo=new Float32Array(n); let o=0; ch.forEach(c=>{ todo.set(c,o); o+=c.length; });
@@ -391,7 +392,7 @@ function enviarEscrito(){ const ta=$("#in"); if(!ta) return; const t=ta.value.tr
 const PIDE_AUDIO = `
 
 El audio adjunto es lo que MARCOS acaba de decir ahora. Devuelve SOLO este JSON:
-{"dijo": "transcripción literal en español de lo que dice Marcos en el audio (cadena vacía si no se oye a nadie hablar o solo hay ruido)", "cliente": "lo siguiente que dice el CLIENTE, sin comillas ni acotaciones; si cuelgas, termina con [CUELGA]"}`;
+{"dijo": "transcripción literal en español de lo que dice Marcos en el audio (cadena vacía si no se oye a nadie hablar, si solo hay ruido o si lo único que se oye es el eco de la última frase del CLIENTE: eso no lo ha dicho Marcos; no inventes nada)", "cliente": "lo siguiente que dice el CLIENTE, sin comillas ni acotaciones; si cuelgas, termina con [CUELGA]"}`;
 async function enviarTurno(txt, audio){
   const ll = S.llamada; if (!ll || ll.pensando || ll.colgo || (!txt && !audio)) return;
   ll.turnos.push({q:"m",t:txt||"🎤 …"}); ll.pensando = true; ll.error = ""; render();
@@ -401,7 +402,10 @@ async function enviarTurno(txt, audio){
       const ll2 = {...ll, turnos: ll.turnos.slice(0,-1)};
       const r = await gemini(promptCliente(ll2)+PIDE_AUDIO, {json:true, rapido:true, audio, schema:{type:"OBJECT",properties:{dijo:{type:"STRING"},cliente:{type:"STRING"}},required:["dijo","cliente"]}});
       const o = sacarJSON(r.text||""); const dijo = String(o.dijo||o.marcos||o.transcripcion||"").trim();
-      if (!dijo){ ll.turnos.pop(); ll.pensando=false; ll.error="No te he entendido bien. Repítelo un poco más alto o más cerca del micro."; render(); return; }
+      // Descarta lo vacío y lo que sea el eco de la última frase del cliente
+      const norm=x=>String(x||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zñ0-9 ]/g," ").replace(/\s+/g," ").trim();
+      const ultC=[...ll.turnos].reverse().find(x=>x.q==="c"); const nd=norm(dijo), nc=norm(ultC&&ultC.t);
+      if (!nd || (nc && nd.length>3 && (nc.includes(nd) || nd.includes(nc)))){ ll.turnos.pop(); ll.pensando=false; render(); return; }
       ll.turnos[ll.turnos.length-1].t = dijo; t = String(o.cliente||"");
     } else {
       const r = await gemini(promptCliente(ll), {rapido:true}); t = r.text||"";
